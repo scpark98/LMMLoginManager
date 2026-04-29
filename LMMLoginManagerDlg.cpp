@@ -154,16 +154,16 @@ void CLMMLoginManagerDlg::init_dialog()
 
 void CLMMLoginManagerDlg::init_controls()
 {
-	m_theme.set_color_theme(CSCColorTheme::color_theme_white);
+	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
 
 	m_button_config.add_image(IDB_CONFIG);
-	m_button_config.set_parent_back_color(m_theme.cr_parent_back);
+	//m_button_config.set_parent_back_color(m_theme.cr_parent_back);
 
 	m_button_minimize.add_image(IDB_MINIMIZE);
-	m_button_minimize.set_parent_back_color(m_theme.cr_parent_back);
+	//m_button_minimize.set_parent_back_color(m_theme.cr_parent_back);
 
 	m_button_close.add_image(IDB_CLOSE);
-	m_button_close.set_parent_back_color(m_theme.cr_parent_back);
+	//m_button_close.set_parent_back_color(m_theme.cr_parent_back);
 
 	m_edit_id.set_color_theme(m_theme.get_color_theme());
 	m_edit_id.set_dim_text(_T("아이디를 입력하세요"));
@@ -177,13 +177,20 @@ void CLMMLoginManagerDlg::init_controls()
 	m_edit_pw.set_password_mode();
 	m_edit_pw.set_action_button(CSCStaticEdit::action_password_toggle);
 
-	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill);
+	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_save_pw.set_text_color(m_theme.cr_text, false);
 	m_check_save_pw.set_back_color(m_theme.cr_back, false);
 
-	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill);
+	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_auto_login.set_text_color(m_theme.cr_text, false);
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
+
+	m_button_login.set_text(_T("로그인"));
+	m_button_login.set_text_color(m_theme.cr_title_text, false);
+	m_button_login.set_back_color(m_theme.cr_title_back_inactive, false);
+	m_button_login.set_round(8);
+	m_button_login.set_font_size(14);
+	m_button_login.set_font_weight(FW_BOLD);
 }
 
 void CLMMLoginManagerDlg::OnSysCommand(UINT nID, LPARAM lParam)
