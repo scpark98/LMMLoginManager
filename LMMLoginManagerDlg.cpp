@@ -69,6 +69,7 @@ void CLMMLoginManagerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK_SAVE_PW, m_check_save_pw);
 	DDX_Control(pDX, IDC_CHECK_AUTO_LOGIN, m_check_auto_login);
 	DDX_Control(pDX, IDC_BUTTON_LOGIN, m_button_login);
+	DDX_Control(pDX, IDC_STATIC_VERSION, m_static_version);
 }
 
 BEGIN_MESSAGE_MAP(CLMMLoginManagerDlg, CDialogEx)
@@ -86,6 +87,8 @@ BEGIN_MESSAGE_MAP(CLMMLoginManagerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_LOGIN, &CLMMLoginManagerDlg::OnBnClickedButtonLogin)
 	ON_WM_ERASEBKGND()
 	ON_WM_WINDOWPOSCHANGED()
+	ON_WM_TIMER()
+	ON_MESSAGE(WM_APP_UI_INVOKE, &CLMMLoginManagerDlg::on_ui_invoke)
 END_MESSAGE_MAP()
 
 
@@ -124,7 +127,9 @@ BOOL CLMMLoginManagerDlg::OnInitDialog()
 	init_dialog();
 	init_controls();
 
-	//RestoreWindowPosition(&theApp, this, _T(""), false, false);
+	RestoreWindowPosition(&theApp, this, _T(""), false, false);
+
+	SetTimer(timer_check_version, 5000, NULL);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -156,6 +161,11 @@ void CLMMLoginManagerDlg::init_controls()
 {
 	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
 
+	m_msgbox.create(this, _S(IDS_TITLE));// , IDR_MAINFRAME);
+	m_msgbox.set_color_theme(m_theme.get_color_theme());
+
+	m_logo.load(IDB_LOGO);
+
 	m_button_config.add_image(IDB_CONFIG);
 	//m_button_config.set_parent_back_color(m_theme.cr_parent_back);
 
@@ -180,6 +190,7 @@ void CLMMLoginManagerDlg::init_controls()
 	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_save_pw.set_text_color(m_theme.cr_text, false);
 	m_check_save_pw.set_back_color(m_theme.cr_back, false);
+	m_check_save_pw.SetCheck();
 
 	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_auto_login.set_text_color(m_theme.cr_text, false);
@@ -187,10 +198,77 @@ void CLMMLoginManagerDlg::init_controls()
 
 	m_button_login.set_text(_T("로그인"));
 	m_button_login.set_text_color(m_theme.cr_title_text, false);
-	m_button_login.set_back_color(m_theme.cr_title_back_inactive, false);
+	m_button_login.set_back_color(m_theme.cr_title_back_inactive);// , false);
 	m_button_login.set_round(8);
 	m_button_login.set_font_size(14);
 	m_button_login.set_font_weight(FW_BOLD);
+
+	m_static_version.set_back_color(m_theme.cr_back);
+}
+
+void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
+{
+	//서버 연결 체크 — 네트워크 호출은 워커에서, UI 작업만 invoke_ui 로 마샬링.
+	if (!is_server_reachable(theApp.m_server_ip, theApp.m_server_port))
+	{
+		invoke_ui([this]
+		{
+			m_msgbox.DoModal(_T("서버에 연결할 수 없습니다."));
+			OnBnClickedCancel();
+		});
+		return;
+	}
+
+	if (th.stop_requested())
+		return;
+
+	if (!get_current_version())
+	{
+		invoke_ui([this]
+			{
+				m_msgbox.DoModal(_T("현재 버전을 얻어올 수 없습니다."));
+				OnBnClickedCancel();
+			});
+		return;
+	}
+
+	if (th.stop_requested())
+		return;
+	
+	if (!get_latest_version())
+	{
+		invoke_ui([this]
+			{
+				m_msgbox.DoModal(_T("서버에서 버전정보를 얻어올 수 없습니다."));
+				OnBnClickedCancel();
+			});
+		return;
+	}
+
+	invoke_ui([this]
+		{
+			m_button_login.EnableWindow(TRUE);
+			Invalidate();
+		});
+}
+
+void CLMMLoginManagerDlg::invoke_ui(std::function<void()> func)
+{
+	const HWND h_wnd = GetSafeHwnd();
+	if (!::IsWindow(h_wnd))
+		return;
+
+	auto* p_func = new std::function<void()>(std::move(func));
+	if (!::PostMessage(h_wnd, WM_APP_UI_INVOKE, 0, reinterpret_cast<LPARAM>(p_func)))
+		delete p_func;
+}
+
+LRESULT CLMMLoginManagerDlg::on_ui_invoke(WPARAM /*wParam*/, LPARAM lParam)
+{
+	std::unique_ptr<std::function<void()>> p_func(
+		reinterpret_cast<std::function<void()>*>(lParam));
+	(*p_func)();
+	return 0;
 }
 
 void CLMMLoginManagerDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -238,6 +316,23 @@ void CLMMLoginManagerDlg::OnPaint()
 		CMemoryDC dc(&dc1, &rc);
 
 		dc.FillSolidRect(rc, m_theme.cr_back.ToCOLORREF());
+
+		Gdiplus::Graphics g(dc);
+		g.SetSmoothingMode(Gdiplus::SmoothingMode::SmoothingModeAntiAlias);
+		g.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+		g.SetTextRenderingHint(Gdiplus::TextRenderingHint::TextRenderingHintAntiAliasGridFit);
+
+		CRect r = rc;
+		r.top = 40;
+		r.bottom = r.top + m_logo.height;
+		m_logo.draw(g, r);
+
+		r.OffsetRect(0, m_logo.height + 12);
+		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_title_back_active);
+
+		r = rc;
+		r.top = r.bottom - 40;
+		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), get_weak_color(m_theme.cr_back, 80));
 	}
 }
 
@@ -293,7 +388,78 @@ void CLMMLoginManagerDlg::OnBnClickedCheckAutoLogin()
 
 void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	if (validate_login_input())
+	{
+
+	}
+	else
+	{
+		m_msgbox.DoModal(_T("ID 또는 패스워드가 입력되지 않았습니다."));
+	}
+}
+
+bool CLMMLoginManagerDlg::get_current_version()
+{
+	get_registry_str(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("Version"), &m_current_version);
+
+	if (m_current_version.IsEmpty())
+	{
+		//m_current_version = _T("0.0.0.0");	=> kms에서 에러 발생함.
+		//맨 처음 실행이라서 로컬버전정보가 없다면 LMMAgent.exe의 ProductVersion을 사용한다.
+		m_current_version = get_file_property(get_exe_directory() + _T("\\LMMAgent.exe"), _T("ProductVersion"));
+		logWrite(_T("m_current_version is empty on first run. use ProductVersion of LMMAgent.exe"));
+	}
+
+	//3.4 -> 3.4.0.0 or 3.4.0 => 3.4.0.0과 같이 4자릿수로 변환한다.
+	int dot_count = get_char_count(m_current_version, '.');
+	while (dot_count < 3)
+	{
+		m_current_version += _T(".0");
+		dot_count++;
+	}
+
+	logWrite(_T("m_current_version = %s"), m_current_version);
+	return true;
+}
+
+bool CLMMLoginManagerDlg::get_latest_version()
+{
+	CRequestUrlParams param(theApp.m_server_ip, theApp.m_server_port, _T("/download/agent/program_kr/version.html"));
+	request_url(&param);
+
+	if (param.status != HTTP_STATUS_OK)
+	{
+		CString str = logWrite(_T("Failed to get latest version info. status: %d"), param.status);
+		m_msgbox.DoModal(str);
+		return false;
+	}
+	else
+	{
+		CString version_info = param.result;
+		version_info.Trim();
+
+		int dot_count = get_char_count(version_info, '.');
+
+		while (dot_count < 3)
+		{
+			version_info += _T(".0");
+			dot_count++;
+		}
+
+		m_latest_version = version_info;
+	}
+
+	logWrite(_T("m_latest_version = %s"), m_latest_version);
+
+	return true;
+}
+
+bool CLMMLoginManagerDlg::validate_login_input()
+{
+	if (m_edit_id.get_text().IsEmpty() || m_edit_pw.get_text().IsEmpty())
+		return false;
+
+	return true;
 }
 
 BOOL CLMMLoginManagerDlg::OnEraseBkgnd(CDC* pDC)
@@ -309,4 +475,16 @@ void CLMMLoginManagerDlg::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
 	SaveWindowPosition(&theApp, this);
+}
+
+void CLMMLoginManagerDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	if (nIDEvent == timer_check_version)
+	{
+		KillTimer(timer_check_version);
+		m_thread.start([this](CSCThread& th) { thread_get_version_info(th); });
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
 }

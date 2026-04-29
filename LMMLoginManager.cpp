@@ -31,6 +31,7 @@ CLMMLoginManagerApp::CLMMLoginManagerApp()
 // 유일한 CLMMLoginManagerApp 개체입니다.
 
 CLMMLoginManagerApp theApp;
+CSCLog gLog;
 
 
 // CLMMLoginManagerApp 초기화
@@ -67,6 +68,19 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	// TODO: 이 문자열을 회사 또는 조직의 이름과 같은
 	// 적절한 내용으로 수정해야 합니다.
 	SetRegistryKey(_T("Koino"));
+
+#ifdef LINKMEMINE_10
+	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMine/Log/LMMLoginManager"));
+#else
+	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMineSE/Log/LMMLoginManager"));
+#endif
+
+	gLog.write_start_log();
+
+	m_config_path.Format(_T("%s\\config.ini"), get_exe_directory());
+	m_ini.SetFileName(m_config_path);
+	m_server_ip = m_ini["SERVER"]["LIP"];
+	m_server_port = m_ini["SERVER"]["LPORT"];
 
 	CLMMLoginManagerDlg dlg;
 	m_pMainWnd = &dlg;

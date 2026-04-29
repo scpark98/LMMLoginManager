@@ -7,6 +7,8 @@
 #include "Common/colors.h"
 #include "Common/CEdit/CSCStaticEdit/SCStaticEdit.h"
 #include "Common/CButton/GdiButton/GdiButton.h"
+#include "Common/thread/CSCThread/SCThread.h"
+#include "Common/messagebox/CSCMessageBox/SCMessageBox.h"
 
 // CLMMLoginManagerDlg 대화 상자
 class CLMMLoginManagerDlg : public CDialogEx
@@ -21,10 +23,34 @@ public:
 #endif
 
 protected:
-	CSCColorTheme m_theme = CSCColorTheme(this);
+	enum TIMER_ID
+	{
+		timer_check_version = 1,
+	};
 
-	void			init_dialog();
-	void			init_controls();
+	CSCColorTheme		m_theme = CSCColorTheme(this);
+	CSCMessageBox		m_msgbox;
+
+	CSCGdiplusBitmap	m_logo;
+
+	CSCThread			m_thread;
+	void				thread_get_version_info(CSCThread& th);
+
+	static constexpr UINT WM_APP_UI_INVOKE = WM_APP + 2;
+	afx_msg LRESULT		on_ui_invoke(WPARAM wParam, LPARAM lParam);
+private:
+	void				invoke_ui(std::function<void()> func);
+
+protected:
+	void				init_dialog();
+	void				init_controls();
+
+	CString				m_current_version;
+	CString				m_latest_version;
+
+	bool				get_current_version();
+	bool				get_latest_version();
+	bool				validate_login_input();
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
@@ -60,4 +86,6 @@ public:
 	afx_msg void OnBnClickedButtonLogin();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	CSCStatic m_static_version;
 };

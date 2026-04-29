@@ -76,25 +76,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>bin/</OutDir>
+    <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\1.Projects_C++;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>bin/</OutDir>
+    <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\1.Projects_C++;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>bin/</OutDir>
+    <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\1.Projects_C++;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>bin/</OutDir>
+    <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\1.Projects_C++;</IncludePath>
   </PropertyGroup>
@@ -197,11 +197,17 @@
   <ItemGroup>
     <ClInclude Include="..\..\Common\CButton\GdiButton\GdiButton.h" />
     <ClInclude Include="..\..\Common\CEdit\CSCStaticEdit\SCStaticEdit.h" />
+    <ClInclude Include="..\..\Common\CEdit\SCEdit\SCEdit.h" />
     <ClInclude Include="..\..\Common\colors.h" />
+    <ClInclude Include="..\..\Common\CStatic\SCStatic\SCStatic.h" />
     <ClInclude Include="..\..\Common\Functions.h" />
+    <ClInclude Include="..\..\Common\ini\EZIni\EZIni.h" />
+    <ClInclude Include="..\..\Common\log\SCLog\SCLog.h" />
     <ClInclude Include="..\..\Common\MemoryDC.h" />
+    <ClInclude Include="..\..\Common\messagebox\CSCMessageBox\SCMessageBox.h" />
     <ClInclude Include="..\..\Common\ResizeCtrl.h" />
     <ClInclude Include="..\..\Common\SCGdiplusBitmap.h" />
+    <ClInclude Include="..\..\Common\thread\CSCThread\SCThread.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LMMLoginManager.h" />
     <ClInclude Include="LMMLoginManagerDlg.h" />
@@ -222,13 +228,43 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\Common\CEdit\SCEdit\SCEdit.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\Common\colors.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\Common\CStatic\SCStatic\SCStatic.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\Common\Functions.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\ini\EZIni\EZIni.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\log\SCLog\SCLog.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\messagebox\CSCMessageBox\SCMessageBox.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -241,6 +277,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\Common\SCGdiplusBitmap.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\thread\CSCThread\SCThread.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -267,6 +309,7 @@
     <Image Include="res\images\config_gray_24px.png" />
     <Image Include="res\images\email_gray_24px.png" />
     <Image Include="res\images\eye_gray_24px.png" />
+    <Image Include="res\images\IDB_LOGO.png" />
     <Image Include="res\images\minimize.png" />
     <Image Include="res\images\minimize_gray_24px.png" />
     <Image Include="res\images\password_gray_24px.png" />

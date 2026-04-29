@@ -57,6 +57,24 @@
     <ClInclude Include="..\..\Common\CEdit\CSCStaticEdit\SCStaticEdit.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\messagebox\CSCMessageBox\SCMessageBox.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CStatic\SCStatic\SCStatic.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CEdit\SCEdit\SCEdit.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\ini\EZIni\EZIni.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\log\SCLog\SCLog.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\thread\CSCThread\SCThread.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LMMLoginManager.cpp">
@@ -84,6 +102,24 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Common\CEdit\CSCStaticEdit\SCStaticEdit.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\messagebox\CSCMessageBox\SCMessageBox.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CStatic\SCStatic\SCStatic.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CEdit\SCEdit\SCEdit.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\ini\EZIni\EZIni.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\log\SCLog\SCLog.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\thread\CSCThread\SCThread.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -129,6 +165,9 @@
       <Filter>리소스 파일</Filter>
     </Image>
     <Image Include="res\images\minimize.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\images\IDB_LOGO.png">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>
