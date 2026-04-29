@@ -1,5 +1,5 @@
-
-// LMMLoginManagerDlg.h: Çì´õ ÆÄÀÏ
+ï»¿
+// LMMLoginManagerDlg.h: í—¤ë” íŒŒì¼
 //
 
 #pragma once
@@ -8,14 +8,14 @@
 #include "Common/CEdit/CSCStaticEdit/SCStaticEdit.h"
 #include "Common/CButton/GdiButton/GdiButton.h"
 
-// CLMMLoginManagerDlg ´ëÈ­ »óÀÚ
+// CLMMLoginManagerDlg ëŒ€í™” ìƒì
 class CLMMLoginManagerDlg : public CDialogEx
 {
-// »ı¼ºÀÔ´Ï´Ù.
+// ìƒì„±ì…ë‹ˆë‹¤.
 public:
-	CLMMLoginManagerDlg(CWnd* pParent = nullptr);	// Ç¥ÁØ »ı¼ºÀÚÀÔ´Ï´Ù.
+	CLMMLoginManagerDlg(CWnd* pParent = nullptr);	// í‘œì¤€ ìƒì„±ìì…ë‹ˆë‹¤.
 
-// ´ëÈ­ »óÀÚ µ¥ÀÌÅÍÀÔ´Ï´Ù.
+// ëŒ€í™” ìƒì ë°ì´í„°ì…ë‹ˆë‹¤.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_LMMLOGINMANAGER_DIALOG };
 #endif
@@ -27,14 +27,14 @@ protected:
 	void			init_controls();
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV Áö¿øÀÔ´Ï´Ù.
+	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV ì§€ì›ì…ë‹ˆë‹¤.
 
 
-// ±¸ÇöÀÔ´Ï´Ù.
+// êµ¬í˜„ì…ë‹ˆë‹¤.
 protected:
 	HICON m_hIcon;
 
-	// »ı¼ºµÈ ¸Ş½ÃÁö ¸Ê ÇÔ¼ö
+	// ìƒì„±ëœ ë©”ì‹œì§€ ë§µ í•¨ìˆ˜
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
