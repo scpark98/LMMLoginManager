@@ -204,6 +204,7 @@ void CLMMLoginManagerDlg::init_controls()
 	m_button_login.set_font_weight(FW_BOLD);
 
 	m_static_version.set_back_color(m_theme.cr_back);
+	m_static_version.set_blink(true, 600, 400);
 }
 
 void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
@@ -248,7 +249,31 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 	invoke_ui([this]
 		{
 			m_button_login.EnableWindow(TRUE);
-			Invalidate();
+
+			if (m_current_version == m_latest_version)
+			{
+				m_static_version.set_blink(false);
+				m_static_version.set_text_alignment(SS_RIGHT | SS_CENTERIMAGE);
+				m_static_version.set_text_color(Gdiplus::Color::Gray);
+				m_static_version.set_text(_T("ver ") + m_current_version);
+				m_edit_id.EnableWindow();
+				m_edit_pw.EnableWindow();
+				m_check_auto_login.EnableWindow();
+				m_check_save_pw.EnableWindow();
+				m_button_login.EnableWindow();
+
+				m_edit_id.SetFocus();
+			}
+			else
+			{
+				CString str;
+
+				str.Format(_T("현재 버전(%s)보다 최신 버전(%s)가 존재합니다. 자동 패치를 진행합니다."), m_current_version, m_latest_version);
+				m_msgbox.DoModal(str, MB_OK, 5);
+
+				str.Format(_T("%s\\AutoPatcher.exe"), get_exe_directory());
+				ShellExecute(m_hWnd, _T("open"), str, nullptr, nullptr, SW_SHOW);
+			}
 		});
 }
 
