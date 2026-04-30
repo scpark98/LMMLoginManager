@@ -24,8 +24,10 @@ public:
 
 	//이 경로는 AutoPatcher(통합 버전)의 m_reg_path와 동일해야 한다.
 #ifdef LINKMEMINE_10
+	CString			m_svc_name = _T("LMMSvcAgentService");
 	CString			m_reg_path = _T("SOFTWARE\\LinkMeMine.service\\LMMAgent");
 #else//LINKMEMINE_30
+	CString			m_svc_name = _T("LMMSEAgentService");
 	CString			m_reg_path = _T("SOFTWARE\\LinkMeMineSE\\LMMAgent");
 #endif
 

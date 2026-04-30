@@ -16,6 +16,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{fe3f2056-0e1b-408f-8fb5-ec5e1fa18d41}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Util">
+      <UniqueIdentifier>{c5430a83-5467-4e0b-8a3b-faf5413c4840}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LMMLoginManager.h">
@@ -36,44 +39,56 @@
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ResizeCtrl.h">
+    <ClInclude Include="$(CommonLibDir)\ResizeCtrl.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\SCGdiplusBitmap.h">
+    <ClInclude Include="$(CommonLibDir)\SCGdiplusBitmap.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\colors.h">
+    <ClInclude Include="$(CommonLibDir)\colors.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\Functions.h">
+    <ClInclude Include="$(CommonLibDir)\Functions.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\MemoryDC.h">
+    <ClInclude Include="$(CommonLibDir)\MemoryDC.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\CButton\GdiButton\GdiButton.h">
+    <ClInclude Include="$(CommonLibDir)\CButton\GdiButton\GdiButton.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\CEdit\CSCStaticEdit\SCStaticEdit.h">
+    <ClInclude Include="$(CommonLibDir)\CEdit\CSCStaticEdit\SCStaticEdit.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\messagebox\CSCMessageBox\SCMessageBox.h">
+    <ClInclude Include="$(CommonLibDir)\messagebox\CSCMessageBox\SCMessageBox.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\CStatic\SCStatic\SCStatic.h">
+    <ClInclude Include="$(CommonLibDir)\CStatic\SCStatic\SCStatic.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\CEdit\SCEdit\SCEdit.h">
+    <ClInclude Include="$(CommonLibDir)\CEdit\SCEdit\SCEdit.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ini\EZIni\EZIni.h">
+    <ClInclude Include="$(CommonLibDir)\ini\EZIni\EZIni.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\log\SCLog\SCLog.h">
+    <ClInclude Include="$(CommonLibDir)\log\SCLog\SCLog.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\thread\CSCThread\SCThread.h">
+    <ClInclude Include="$(CommonLibDir)\thread\CSCThread\SCThread.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\neturoauth.h">
+      <Filter>소스 파일\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\neturoPassword.h">
+      <Filter>소스 파일\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\d3des.h">
+      <Filter>소스 파일\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -86,41 +101,50 @@
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ResizeCtrl.cpp">
+    <ClCompile Include="$(CommonLibDir)\ResizeCtrl.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\SCGdiplusBitmap.cpp">
+    <ClCompile Include="$(CommonLibDir)\SCGdiplusBitmap.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\colors.cpp">
+    <ClCompile Include="$(CommonLibDir)\colors.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\Functions.cpp">
+    <ClCompile Include="$(CommonLibDir)\Functions.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\CButton\GdiButton\GdiButton.cpp">
+    <ClCompile Include="$(CommonLibDir)\CButton\GdiButton\GdiButton.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\CEdit\CSCStaticEdit\SCStaticEdit.cpp">
+    <ClCompile Include="$(CommonLibDir)\CEdit\CSCStaticEdit\SCStaticEdit.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\messagebox\CSCMessageBox\SCMessageBox.cpp">
+    <ClCompile Include="$(CommonLibDir)\messagebox\CSCMessageBox\SCMessageBox.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\CStatic\SCStatic\SCStatic.cpp">
+    <ClCompile Include="$(CommonLibDir)\CStatic\SCStatic\SCStatic.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\CEdit\SCEdit\SCEdit.cpp">
+    <ClCompile Include="$(CommonLibDir)\CEdit\SCEdit\SCEdit.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ini\EZIni\EZIni.cpp">
+    <ClCompile Include="$(CommonLibDir)\ini\EZIni\EZIni.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\log\SCLog\SCLog.cpp">
+    <ClCompile Include="$(CommonLibDir)\log\SCLog\SCLog.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\thread\CSCThread\SCThread.cpp">
+    <ClCompile Include="$(CommonLibDir)\thread\CSCThread\SCThread.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\neturoauth.c">
+      <Filter>소스 파일\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\d3des.c">
+      <Filter>소스 파일\Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

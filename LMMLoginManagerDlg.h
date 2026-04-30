@@ -52,6 +52,9 @@ protected:
 	bool				get_latest_version();
 	bool				validate_login_input();
 
+	bool				service_start();
+	bool				service_stop(bool include_delete = false);
+
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
 
