@@ -8,6 +8,8 @@
 #include "LMMLoginManagerDlg.h"
 #include "afxdialogex.h"
 
+#include "Util.h"
+
 #include "Common/MemoryDC.h"
 
 #ifdef _DEBUG
@@ -129,7 +131,8 @@ BOOL CLMMLoginManagerDlg::OnInitDialog()
 
 	RestoreWindowPosition(&theApp, this, _T(""), false, false);
 
-	SetTimer(timer_check_version, 5000, NULL);
+	//실제로는 100이며 서버 체크 목적으로 5000으로 설정.
+	SetTimer(timer_check_version, 500, NULL);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -190,11 +193,12 @@ void CLMMLoginManagerDlg::init_controls()
 	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_save_pw.set_text_color(m_theme.cr_text, false);
 	m_check_save_pw.set_back_color(m_theme.cr_back, false);
-	m_check_save_pw.SetCheck();
+	m_check_save_pw.SetCheck(theApp.m_ini["LOGIN"]["SAVE_PASSWORD"]);
 
 	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_auto_login.set_text_color(m_theme.cr_text, false);
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
+	m_check_auto_login.SetCheck(theApp.m_ini["LOGIN"]["AUTO_LOGIN"]);
 
 	m_button_login.set_text(_T("로그인"));
 	m_button_login.set_text_color(m_theme.cr_title_text, false);
@@ -204,6 +208,7 @@ void CLMMLoginManagerDlg::init_controls()
 	m_button_login.set_font_weight(FW_BOLD);
 
 	m_static_version.set_back_color(m_theme.cr_back);
+	m_static_version.set_text_color(m_theme.cr_title_back_active);
 	m_static_version.set_blink(true, 600, 400);
 }
 
@@ -214,7 +219,9 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 	{
 		invoke_ui([this]
 		{
-			m_msgbox.DoModal(_T("서버에 연결할 수 없습니다."));
+			m_static_version.set_blink(false);
+			m_static_version.set_text(_T("서버 연결 실패"), Gdiplus::Color::Crimson);
+			m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 확인하세요."));
 			OnBnClickedCancel();
 		});
 		return;
@@ -248,13 +255,11 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 
 	invoke_ui([this]
 		{
-			m_button_login.EnableWindow(TRUE);
-
 			if (m_current_version == m_latest_version)
 			{
 				m_static_version.set_blink(false);
-				m_static_version.set_text_alignment(SS_RIGHT | SS_CENTERIMAGE);
-				m_static_version.set_text_color(Gdiplus::Color::Gray);
+				m_static_version.set_halign(DT_RIGHT);
+				m_static_version.set_text_color(Gdiplus::Color::LightGray);
 				m_static_version.set_text(_T("ver ") + m_current_version);
 				m_edit_id.EnableWindow();
 				m_edit_pw.EnableWindow();
@@ -263,6 +268,20 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 				m_button_login.EnableWindow();
 
 				m_edit_id.SetFocus();
+
+				//자동 로그인 옵션이 켜져있으면 ID, PW를 입력시키고 자동 로그인 시도.
+				if (m_check_auto_login.GetCheck() == BST_CHECKED)
+				{
+					m_edit_id.set_text(CString(theApp.m_ini["LOGIN"]["ID"]));
+					CString pw = theApp.m_ini["LOGIN"]["PASS"];
+					if (!pw.IsEmpty())
+					{
+						pw = Util::EnCryptPassword(pw);
+						m_edit_pw.set_text(pw);
+					}
+
+					//OnBnClickedButtonLogin();
+				}
 			}
 			else
 			{
@@ -415,11 +434,50 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 {
 	if (validate_login_input())
 	{
-
+		service_start();
 	}
 	else
 	{
 		m_msgbox.DoModal(_T("ID 또는 패스워드가 입력되지 않았습니다."));
+	}
+}
+
+bool CLMMLoginManagerDlg::service_start()
+{
+	if (!service_stop(true))
+		return false;
+
+	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
+	ShellExecute(NULL, _T("open"), agent_path, _T("-start"), NULL, SW_SHOW);
+
+	return true;
+}
+
+bool CLMMLoginManagerDlg::service_stop(bool include_delete)
+{
+	DWORD error_code = 0;
+	CString detail;
+	CString str;
+
+	if (service_command(theApp.m_svc_name, _T("query"), error_code, &detail) == 0)
+	{
+		str = logWrite(_T("service query fail. error_code = %d (%s)"), error_code, detail);
+		m_msgbox.DoModal(str);
+		return false;
+	}
+
+	//기존 동일한 이름으로 서비스가 실행중일때에도 제거 후 install, start 시킨다.
+	//이렇게 하는 이유는 간혹 솔루션을 테스트 할 경우 해당 서비스와 동일한 이름으로 서비스가 등록되었거나 실행중일 경우에는
+	//다른 경로의 LMMAgent.exe를 서비스로 구동시키므로 제대로 동작될 리 없다.
+	//따라서 이미 등록되어 있는 서비스라도	 무조건 제거 후 새로 등록하여 실행시키도록 한다.
+	if (include_delete && error_code != ERROR_SERVICE_DOES_NOT_EXIST)//서비스가 설치되어 있을 경우 (실행중이든 중지중이든)
+	{
+		if (service_command(theApp.m_svc_name, _T("delete"), error_code, &detail) == 0)
+		{
+			str = logWrite(_T("service delete fail. error_code = %d (%s)"), error_code, detail);
+			m_msgbox.DoModal(str);
+			return false;
+		}
 	}
 }
 
