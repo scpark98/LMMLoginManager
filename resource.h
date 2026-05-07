@@ -24,6 +24,8 @@
 #define IDC_CHECK_SAVE_PW               1005
 #define IDC_CHECK_AUTO_LOGIN            1006
 #define IDC_BUTTON_LOGIN                1007
+#define IDC_BUTTON_LOGIN2               1008
+#define IDC_BUTTON_RESTART              1008
 #define IDC_STATIC_VERSION              1009
 #define IDC_STATIC_SERVER_VERSION_LABEL 1011
 

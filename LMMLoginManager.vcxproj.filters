@@ -90,6 +90,12 @@
     <ClInclude Include="Util\d3des.h">
       <Filter>소스 파일\Util</Filter>
     </ClInclude>
+    <ClInclude Include="UdpSocket.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="LmmProto.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LMMLoginManager.cpp">
@@ -145,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="Util\d3des.c">
       <Filter>소스 파일\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpSocket.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

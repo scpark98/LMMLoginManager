@@ -72,6 +72,7 @@ void CLMMLoginManagerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK_AUTO_LOGIN, m_check_auto_login);
 	DDX_Control(pDX, IDC_BUTTON_LOGIN, m_button_login);
 	DDX_Control(pDX, IDC_STATIC_VERSION, m_static_version);
+	DDX_Control(pDX, IDC_BUTTON_RESTART, m_button_restart);
 }
 
 BEGIN_MESSAGE_MAP(CLMMLoginManagerDlg, CDialogEx)
@@ -128,6 +129,7 @@ BOOL CLMMLoginManagerDlg::OnInitDialog()
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 	init_dialog();
 	init_controls();
+	m_udpSocket.Create();
 
 	RestoreWindowPosition(&theApp, this, _T(""), false, false);
 
@@ -163,30 +165,35 @@ void CLMMLoginManagerDlg::init_dialog()
 void CLMMLoginManagerDlg::init_controls()
 {
 	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
+	//m_theme.set_color_theme(CSCColorTheme::color_theme_anysupport);
+	//m_theme.set_color_theme(CSCColorTheme::color_theme_helpu);
+	m_theme.cr_back = gGRAY(248);
+	m_theme.cr_parent_back = m_theme.cr_back;
 
-	m_msgbox.create(this, _S(IDS_TITLE));// , IDR_MAINFRAME);
-	m_msgbox.set_color_theme(m_theme.get_color_theme());
+	theApp.m_msgbox.create(this, _S(IDS_TITLE));// , IDR_MAINFRAME);
+	//cr_back 등 dialog 측에서 가한 오버라이드까지 그대로 전달하기 위해 객체 자체를 넘김.
+	theApp.m_msgbox.set_color_theme(m_theme);
 
 	m_logo.load(IDB_LOGO);
 
 	m_button_config.add_image(IDB_CONFIG);
-	//m_button_config.set_parent_back_color(m_theme.cr_parent_back);
+	m_button_config.set_parent_back_color(m_theme.cr_back);
 
 	m_button_minimize.add_image(IDB_MINIMIZE);
-	//m_button_minimize.set_parent_back_color(m_theme.cr_parent_back);
+	m_button_minimize.set_parent_back_color(m_theme.cr_back);
 
 	m_button_close.add_image(IDB_CLOSE);
-	//m_button_close.set_parent_back_color(m_theme.cr_parent_back);
+	m_button_close.set_parent_back_color(m_theme.cr_back);
 
-	m_edit_id.set_color_theme(m_theme.get_color_theme());
+	m_edit_id.set_color_theme(m_theme);
 	m_edit_id.set_dim_text(_T("아이디를 입력하세요"));
 	m_edit_id.set_prefix_image(IDB_USER);
-	m_edit_id.set_round(8);
+	m_edit_id.set_round(6);
 
-	m_edit_pw.set_color_theme(m_theme.get_color_theme());
+	m_edit_pw.set_color_theme(m_theme);
 	m_edit_pw.set_dim_text(_T("비밀번호를 입력하세요"));
 	m_edit_pw.set_prefix_image(IDB_PASSWORD);
-	m_edit_pw.set_round(8);
+	m_edit_pw.set_round(6);
 	m_edit_pw.set_password_mode();
 	m_edit_pw.set_action_button(CSCStaticEdit::action_password_toggle);
 
@@ -203,9 +210,12 @@ void CLMMLoginManagerDlg::init_controls()
 	m_button_login.set_text(_T("로그인"));
 	m_button_login.set_text_color(m_theme.cr_title_text, false);
 	m_button_login.set_back_color(m_theme.cr_title_back_inactive);// , false);
-	m_button_login.set_round(8);
+	m_button_login.set_parent_back_color(m_theme.cr_back);
+	m_button_login.set_round(6);
 	m_button_login.set_font_size(14);
 	m_button_login.set_font_weight(FW_BOLD);
+	m_button_login.copy_properties(m_button_restart);
+	m_button_restart.ShowWindow(SW_HIDE);
 
 	m_static_version.set_back_color(m_theme.cr_back);
 	m_static_version.set_text_color(m_theme.cr_title_back_active);
@@ -221,7 +231,7 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 		{
 			m_static_version.set_blink(false);
 			m_static_version.set_text(_T("서버 연결 실패"), Gdiplus::Color::Crimson);
-			m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 확인하세요."));
+			theApp.m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 확인하세요."));
 			OnBnClickedCancel();
 		});
 		return;
@@ -234,7 +244,7 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 	{
 		invoke_ui([this]
 			{
-				m_msgbox.DoModal(_T("현재 버전을 얻어올 수 없습니다."));
+				theApp.m_msgbox.DoModal(_T("현재 버전을 얻어올 수 없습니다."));
 				OnBnClickedCancel();
 			});
 		return;
@@ -247,7 +257,7 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 	{
 		invoke_ui([this]
 			{
-				m_msgbox.DoModal(_T("서버에서 버전정보를 얻어올 수 없습니다."));
+				theApp.m_msgbox.DoModal(_T("서버에서 버전정보를 얻어올 수 없습니다."));
 				OnBnClickedCancel();
 			});
 		return;
@@ -280,7 +290,7 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 						m_edit_pw.set_text(pw);
 					}
 
-					//OnBnClickedButtonLogin();
+					OnBnClickedButtonLogin();
 				}
 			}
 			else
@@ -288,7 +298,7 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 				CString str;
 
 				str.Format(_T("현재 버전(%s)보다 최신 버전(%s)가 존재합니다. 자동 패치를 진행합니다."), m_current_version, m_latest_version);
-				m_msgbox.DoModal(str, MB_OK, 5);
+				theApp.m_msgbox.DoModal(str, MB_OK, 5);
 
 				str.Format(_T("%s\\AutoPatcher.exe"), get_exe_directory());
 				ShellExecute(m_hWnd, _T("open"), str, nullptr, nullptr, SW_SHOW);
@@ -377,6 +387,16 @@ void CLMMLoginManagerDlg::OnPaint()
 		r = rc;
 		r.top = r.bottom - 40;
 		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), get_weak_color(m_theme.cr_back, 80));
+
+		r.right -= 4;
+		//r.bottom += 4;
+		draw_text(g, r, m_current_version, 7, Gdiplus::FontStyleRegular, 0, 0.0f, _T("Segoe UI"),
+			get_weak_color(m_theme.cr_back, 80),
+			Gdiplus::Color::Transparent,
+			Gdiplus::Color::Transparent,
+			Gdiplus::Color::Transparent,
+			DT_RIGHT | DT_VCENTER);
+		//draw_rect(g, r, Gdiplus::Color::Red);
 	}
 }
 
@@ -422,34 +442,84 @@ void CLMMLoginManagerDlg::OnBnClickedButtonClose()
 
 void CLMMLoginManagerDlg::OnBnClickedCheckSavePw()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	theApp.m_ini["LOGIN"]["SAVE_PASSWORD"] = m_check_save_pw.GetCheck();
 }
 
 void CLMMLoginManagerDlg::OnBnClickedCheckAutoLogin()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	theApp.m_ini["LOGIN"]["AUTO_LOGIN"] = m_check_auto_login.GetCheck();
 }
 
 void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 {
-	if (validate_login_input())
+	if (m_login_state == LOGIN_BEFORE)
 	{
-		service_start();
+		if (validate_login_input())
+		{
+			service_start();
+		}
+		else
+		{
+			theApp.m_msgbox.DoModal(_T("ID 또는 패스워드가 입력되지 않았습니다."));
+		}
 	}
-	else
+	else if (m_login_state == LOGIN_OK)
 	{
-		m_msgbox.DoModal(_T("ID 또는 패스워드가 입력되지 않았습니다."));
+		//이미 로그인 된 상태에서 "로그아웃" 클릭 시
+		//auto login이면 서비스를 중지하고
+		if (theApp.m_ini["LOGIN"]["AUTO_LOGIN"])
+		{
+			service_stop();
+		}
+		//auto login이 아니면 서비스를 삭제한다.
+		else
+		{
+			service_stop(true);
+		}
+
+		set_login_state(LOGIN_BEFORE);
+		select_child_dialog();
+		terminate_other_process();
 	}
 }
 
 bool CLMMLoginManagerDlg::service_start()
 {
-	if (!service_stop(true))
-		return false;
+	//서비스가 이미 실행중이거나 설치되어 있을 경우 제거 후 새로 등록하여 실행시키도록 한다.
+	service_stop(true);
 
+	//서비스를 등록하고
+	logWrite(_T("install service (%s)..."), theApp.m_svc_name);
 	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
+	ShellExecute(NULL, _T("open"), agent_path, _T("-install"), NULL, SW_SHOW);
+
+	//서비스가 정상 등록될 때까지 기다렸다가 구동시킨다.
+	while (true)
+	{
+		DWORD error_code = 0;
+		CString detail;
+		DWORD status_code = service_command(theApp.m_svc_name, _T("query"), error_code, &detail);
+
+		//등록이 실패한 경우
+		if (status_code < 1)
+		{
+			CString str = logWrite(_T("waiting for the service to be installed..."), theApp.m_svc_name, error_code, detail);
+
+			Sleep(1000);
+			continue;
+			//theApp.m_msgbox.DoModal(str);
+			//return false;
+		}
+		
+		break;
+	}
+
+	logWrite(_T("service installed successfully. start service..."));
+
+	//서비스가 정상 등록되었다면 구동시킨다.
 	ShellExecute(NULL, _T("open"), agent_path, _T("-start"), NULL, SW_SHOW);
 
+	//이제 LMMAgent가 구동되면서 로그인 결과를 UDP로 전달하게 된다.
 	return true;
 }
 
@@ -461,24 +531,45 @@ bool CLMMLoginManagerDlg::service_stop(bool include_delete)
 
 	if (service_command(theApp.m_svc_name, _T("query"), error_code, &detail) == 0)
 	{
-		str = logWrite(_T("service query fail. error_code = %d (%s)"), error_code, detail);
-		m_msgbox.DoModal(str);
-		return false;
+		//str = logWrite(_T("service name = %s, query fail. error_code = %d (%s)"), theApp.m_svc_name, error_code, detail);
+		//theApp.m_msgbox.DoModal(str);
+		return true;
 	}
 
 	//기존 동일한 이름으로 서비스가 실행중일때에도 제거 후 install, start 시킨다.
 	//이렇게 하는 이유는 간혹 솔루션을 테스트 할 경우 해당 서비스와 동일한 이름으로 서비스가 등록되었거나 실행중일 경우에는
 	//다른 경로의 LMMAgent.exe를 서비스로 구동시키므로 제대로 동작될 리 없다.
 	//따라서 이미 등록되어 있는 서비스라도	 무조건 제거 후 새로 등록하여 실행시키도록 한다.
-	if (include_delete && error_code != ERROR_SERVICE_DOES_NOT_EXIST)//서비스가 설치되어 있을 경우 (실행중이든 중지중이든)
+	if (error_code != ERROR_SERVICE_DOES_NOT_EXIST)//서비스가 존재할 경우 (실행중이든 중지중이든)
 	{
-		if (service_command(theApp.m_svc_name, _T("delete"), error_code, &detail) == 0)
+		if (include_delete)
 		{
-			str = logWrite(_T("service delete fail. error_code = %d (%s)"), error_code, detail);
-			m_msgbox.DoModal(str);
-			return false;
+			if (service_command(theApp.m_svc_name, _T("delete"), error_code, &detail) == 0)
+			{
+				str = logWrite(_T("service delete fail. error_code = %d (%s)"), error_code, detail);
+				//theApp.m_msgbox.DoModal(str);
+				return false;
+			}
+			else
+			{
+				logWrite(_T("service delete success."));
+			}
+		}
+		else
+		{
+			if (service_command(theApp.m_svc_name, _T("stop"), error_code, &detail) == 0)
+			{
+				str = logWrite(_T("service stop fail. error_code = %d (%s)"), error_code, detail);
+				return false;
+			}
+			else
+			{
+				logWrite(_T("service stop success."));
+			}
 		}
 	}
+
+	return true;
 }
 
 bool CLMMLoginManagerDlg::get_current_version()
@@ -501,6 +592,7 @@ bool CLMMLoginManagerDlg::get_current_version()
 		dot_count++;
 	}
 
+	Invalidate();
 	logWrite(_T("m_current_version = %s"), m_current_version);
 	return true;
 }
@@ -513,7 +605,7 @@ bool CLMMLoginManagerDlg::get_latest_version()
 	if (param.status != HTTP_STATUS_OK)
 	{
 		CString str = logWrite(_T("Failed to get latest version info. status: %d"), param.status);
-		m_msgbox.DoModal(str);
+		theApp.m_msgbox.DoModal(str);
 		return false;
 	}
 	else
@@ -570,4 +662,43 @@ void CLMMLoginManagerDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+void CLMMLoginManagerDlg::select_child_dialog()
+{
+	if (m_login_state == LOGIN_BEFORE)
+	{
+		m_button_restart.ShowWindow(SW_HIDE);
+		m_edit_id.ShowWindow(SW_SHOW);
+		m_edit_pw.ShowWindow(SW_SHOW);
+		m_button_login.set_text(_T("로그인"));
+	}
+	else if (m_login_state == LOGIN_OK)
+	{
+		m_edit_id.ShowWindow(SW_HIDE);
+		m_edit_pw.ShowWindow(SW_HIDE);
+		m_button_restart.ShowWindow(SW_SHOW);
+		m_button_login.set_text(_T("로그아웃"));
+	}
+}
+
+void CLMMLoginManagerDlg::terminate_other_process()
+{
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nScreenClient.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient2.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer2.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDClient.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDServer.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im hwmon.exe"), NULL, SW_HIDE);
+
+	/*
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nScreenClient.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDClient.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDServer.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDClient.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDServer.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\hwmon.exe"));
+	*/
 }

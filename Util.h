@@ -1,9 +1,6 @@
 ﻿#pragma once
 #include "winsvc.h"
 
-#define _S Util::LoadMyString
-
-
 class Util
 {
 public:

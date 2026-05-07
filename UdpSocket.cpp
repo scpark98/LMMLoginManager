@@ -1,10 +1,7 @@
-#include "StdAfx.h"
+ï»¿#include "pch.h"
 #include "LMMLoginManager.h"
 #include "LMMLoginManagerDlg.h"
-#include "MessageDlg.h"
 #include "UdpSocket.h"
-#include "AgentControl.h"
-#include "Log.h"
 
 #include "Common/Functions.h"
 
@@ -31,24 +28,22 @@ BOOL CUdpSocket::Create()
 		{
 			break;
 		}
+		Wait(500);
 		++plusCnt;
 	}
 
-	CString strUDPPort;
-	strUDPPort.Format(_T("%d"), UDP_PORT, plusCnt);
-	Config::SaveAgentUDPPort(strUDPPort);
 	return TRUE;
 }
 
 
 void CUdpSocket::OnReceive(int nErrorCode)
 {
-	//20240723 scpark LMMAgent¿¡¼­´Â udpSocket.Send(LM_AGENT_LOGIN_OK);·Î º¸³»°í (cmd_id = 102)
-	//¾Æ·¡ ÁÖ¼®Ã³¸® ÇÑ ±âÁ¸ ÄÚµå·Î´Â Li_numRead°¡ °è¼Ó -1¸¸ ³Ñ¾î¿Â´Ù.
-	//SE¿Í µ¿ÀÏÇÏ°Ô LMMAgent°¡ º¸³¾ ¶§ UDPMSG ±¸Á¶Ã¼·Î º¸³»°í
-	//±¸Á¶Ã¼·Î ¹ÞÀ¸´Ï Li_numRead, msg ¸ðµÎ Á¤»ó µ¿ÀÛÇÔ.
-	//LMMAgent¿¡¼­´Â ±¸Á¶Ã¼°¡ ¾Æ´Ñ udpSocket.Send(LM_AGENT_LOGIN_OK) Çü½ÄÀ¸·Î º¸³»´Â ÄÚµåµéÀÌ
-	//´Ù¼ö Á¸ÀçÇÏ´Âµ¥ ÀÌ ¶§¿¡µµ ±¸Á¶Ã¼ Çü½ÄÀ¸·Î ReceiveÇØµµ command¿¡´Â ¿Ã¹Ù¸¥ °ªÀÌ ¼ö½ÅµÈ´Ù.
+	//20240723 scpark LMMAgentì—ì„œëŠ” udpSocket.Send(LM_AGENT_LOGIN_OK);ë¡œ ë³´ë‚´ê³  (cmd_id = 102)
+	//ì•„ëž˜ ì£¼ì„ì²˜ë¦¬ í•œ ê¸°ì¡´ ì½”ë“œë¡œëŠ” Li_numReadê°€ ê³„ì† -1ë§Œ ë„˜ì–´ì˜¨ë‹¤.
+	//SEì™€ ë™ì¼í•˜ê²Œ LMMAgentê°€ ë³´ë‚¼ ë•Œ UDPMSG êµ¬ì¡°ì²´ë¡œ ë³´ë‚´ê³ 
+	//êµ¬ì¡°ì²´ë¡œ ë°›ìœ¼ë‹ˆ Li_numRead, msg ëª¨ë‘ ì •ìƒ ë™ìž‘í•¨.
+	//LMMAgentì—ì„œëŠ” êµ¬ì¡°ì²´ê°€ ì•„ë‹Œ udpSocket.Send(LM_AGENT_LOGIN_OK) í˜•ì‹ìœ¼ë¡œ ë³´ë‚´ëŠ” ì½”ë“œë“¤ì´
+	//ë‹¤ìˆ˜ ì¡´ìž¬í•˜ëŠ”ë° ì´ ë•Œì—ë„ êµ¬ì¡°ì²´ í˜•ì‹ìœ¼ë¡œ Receiveí•´ë„ commandì—ëŠ” ì˜¬ë°”ë¥¸ ê°’ì´ ìˆ˜ì‹ ëœë‹¤.
 	/*
 	BYTE* Lb_Buffer = new BYTE[MAX_BUF];
 	int Li_BufferSize = sizeof(BYTE) * MAX_BUF;
@@ -93,7 +88,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 					else
 					{
 						// Datagram was too large and was truncated
-						// Buffer ¿¡ Ãß°¡·Î ´ãÀ¸¸é µÊ
+						// Buffer ì— ì¶”ê°€ë¡œ ë‹´ìœ¼ë©´ ë¨
 					}
 				}
 			}
@@ -112,85 +107,76 @@ void CUdpSocket::OnReceive(int nErrorCode)
 						break;
 					case LM_AGENT_LOGIN_OK:
 						{
-							Config::SaveManualLoginStatus(0);
+							//Config::SaveManualLoginStatus(0);
+							AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SetLoginState(LOGIN_OK);
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SelectChildDialog();
-							//20240723 scpark ·Î±×ÀÎÀÌ ¿Ï·áµÇ¸é ¾ÛÀ» Á¾·á½ÃÅ°Áö ¸»°í ¿Ï·áµÈ ¸ð½ÀÀ» ±×´ë·Î Ç¥½ÃÇÏÀÚ.
-							//20240729 scpark ·Î±×ÀÎ ¿Ï·á ÈÄ Ã¢À» ³²°ÜµÎÁö ¾Ê°í Á¾·á½ÃÅ°µµ·Ï º¯°æ
-							//20240731 scpark ·Î±×ÀÎ ¿Ï·á ÈÄ ¸ÞÀÎÃ¢À» ±×³É ´ÝÁö¸»°í ¾÷µ¥ÀÌÆ®¸¦ ¼öÇàÇÑ ÈÄ Á¾·á½ÃÅ°ÀÚ.
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->check_update_and_exit();
+							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->set_login_state(LOGIN_OK);
+							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
+							//20240723 scpark ë¡œê·¸ì¸ì´ ì™„ë£Œë˜ë©´ ì•±ì„ ì¢…ë£Œì‹œí‚¤ì§€ ë§ê³  ì™„ë£Œëœ ëª¨ìŠµì„ ê·¸ëŒ€ë¡œ í‘œì‹œí•˜ìž.
+							//20240729 scpark ë¡œê·¸ì¸ ì™„ë£Œ í›„ ì°½ì„ ë‚¨ê²¨ë‘ì§€ ì•Šê³  ì¢…ë£Œì‹œí‚¤ë„ë¡ ë³€ê²½
+							//20240731 scpark ë¡œê·¸ì¸ ì™„ë£Œ í›„ ë©”ì¸ì°½ì„ ê·¸ëƒ¥ ë‹«ì§€ë§ê³  ì—…ë°ì´íŠ¸ë¥¼ ìˆ˜í–‰í•œ í›„ ì¢…ë£Œì‹œí‚¤ìž.
+							///((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->check_update_and_exit();
 						}
 						break;
 					case LM_AGENT_SERVER_CON_FAIL:
 						{
-							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->GetLoginState() == LOGIN_BEFORE )
+							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
-								CMessageDlg dlgMessage;
-								dlgMessage.SetMessage(_S(IDS_CONNECT_FAIL));
-								dlgMessage.DoModal();
-						
-								Config::SaveManualLoginStatus(0);
+								theApp.m_msgbox.DoModal(_T("connect failed"));// _S(IDS_CONNECT_FAIL));
+								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
-								theApp.m_agent_control.StopAgent();
-								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
+								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
 							}
 						}
 						break;
 					case LM_AGENT_ID_PASS_FAIL:
 						{
-							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->GetLoginState() == LOGIN_BEFORE )
+							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
-								CMessageDlg dlgMessage;
-								dlgMessage.SetMessage(_S(IDS_INVALID_IDPW));
-								dlgMessage.DoModal();
+								theApp.m_msgbox.DoModal(_T("invalid ID or password"));// _S(IDS_INVALID_IDPW));
 						
-								Config::SaveManualLoginStatus(0);
+								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
-								theApp.m_agent_control.StopAgent();
-								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
+								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
 							}
 						}
 						break;
 					case LM_AGENT_LOGOUT:
 						{
-							Config::SaveManualLoginStatus(0);
+						AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SetLoginState(LOGIN_BEFORE);
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SetUserLogout(TRUE);
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SelectChildDialog();
+							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->set_login_state(LOGIN_BEFORE);
+							//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SetUserLogout(TRUE);
+							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
 						}
 						break;
 					case LM_AGENT_VOLUME_FULL:
 						{
-							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->GetLoginState() == LOGIN_BEFORE )
+							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
 								ShellExecute(NULL, _T("open"), _T("https://linkmemine.freshdesk.com/support/solutions/articles/151000206000--%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EC%9D%98-%EA%B3%84%EC%A0%95-%EB%93%B1%EB%A1%9D-%ED%95%9C%EB%8F%84%EA%B0%80-%EC%B4%88%EA%B3%BC%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4-%EB%98%90%EB%8A%94-%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4-%EB%A7%8C%EB%A3%8C-%EC%95%8C%EB%A6%BC-%ED%8C%9D%EC%97%85-%EC%B2%98%EB%A6%AC-%EB%B0%A9%EB%B2%95"), 0, 0, SW_SHOWNORMAL);
 
-								CMessageDlg dlgMessage;
-								dlgMessage.SetMessage(_S(IDS_SERVER_VOLUME_FULL));
-								dlgMessage.DoModal();
+								theApp.m_msgbox.DoModal(_T("server volume full"));// _S(IDS_SERVER_VOLUME_FULL));
 						
-								Config::SaveManualLoginStatus(0);
-
-								theApp.m_agent_control.StopAgent();
-								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
+								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
 							}
 						}
 						break;
 
 					case LM_AGENT_LICENSE_EXPIRED:
 						{
-							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->GetLoginState() == LOGIN_BEFORE )
+							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
-								CMessageDlg dlgMessage;
-								dlgMessage.SetMessage(_S(IDS_SERVER_LICENSE_EXPIRED));
-								dlgMessage.DoModal();
+								theApp.m_msgbox.DoModal(_T("server license expired"));// _S(IDS_SERVER_LICENSE_EXPIRED));
 						
-								Config::SaveManualLoginStatus(0);
+								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
-								theApp.m_agent_control.StopAgent();
-								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
+								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
 							}
 						}
 						break;

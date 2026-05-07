@@ -8,7 +8,8 @@
 #include "Common/CEdit/CSCStaticEdit/SCStaticEdit.h"
 #include "Common/CButton/GdiButton/GdiButton.h"
 #include "Common/thread/CSCThread/SCThread.h"
-#include "Common/messagebox/CSCMessageBox/SCMessageBox.h"
+
+#include "UdpSocket.h"
 
 // CLMMLoginManagerDlg 대화 상자
 class CLMMLoginManagerDlg : public CDialogEx
@@ -16,6 +17,13 @@ class CLMMLoginManagerDlg : public CDialogEx
 // 생성입니다.
 public:
 	CLMMLoginManagerDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
+
+	bool				service_start();
+	bool				service_stop(bool include_delete = false);
+
+	int					get_login_state() { return m_login_state; }
+	void				set_login_state(int login_state) { m_login_state = login_state; }
+	void				select_child_dialog();
 
 // 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
@@ -29,15 +37,18 @@ protected:
 	};
 
 	CSCColorTheme		m_theme = CSCColorTheme(this);
-	CSCMessageBox		m_msgbox;
 
 	CSCGdiplusBitmap	m_logo;
 
 	CSCThread			m_thread;
 	void				thread_get_version_info(CSCThread& th);
 
+	CUdpSocket			m_udpSocket;		// UDP Server
+
 	static constexpr UINT WM_APP_UI_INVOKE = WM_APP + 2;
 	afx_msg LRESULT		on_ui_invoke(WPARAM wParam, LPARAM lParam);
+
+	void				terminate_other_process();
 private:
 	void				invoke_ui(std::function<void()> func);
 
@@ -45,15 +56,14 @@ protected:
 	void				init_dialog();
 	void				init_controls();
 
-	CString				m_current_version;
-	CString				m_latest_version;
+	CString				m_current_version = _T("0.0.0.0");
+	CString				m_latest_version = _T("0.0.0.0");
+
+	int					m_login_state = LOGIN_BEFORE;
 
 	bool				get_current_version();
 	bool				get_latest_version();
 	bool				validate_login_input();
-
-	bool				service_start();
-	bool				service_stop(bool include_delete = false);
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
@@ -81,6 +91,7 @@ public:
 	CGdiButton m_check_save_pw;
 	CGdiButton m_check_auto_login;
 	CGdiButton m_button_login;
+	CGdiButton m_button_restart;
 	afx_msg void OnBnClickedButtonConfig();
 	afx_msg void OnBnClickedButtonMinimize();
 	afx_msg void OnBnClickedButtonClose();

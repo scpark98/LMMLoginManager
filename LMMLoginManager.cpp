@@ -50,6 +50,11 @@ BOOL CLMMLoginManagerApp::InitInstance()
 
 	CWinApp::InitInstance();
 
+	if (!AfxSocketInit())
+	{
+		m_msgbox.DoModal(_T("Windows sockets initialization failed."));// IDP_SOCKETS_INIT_FAILED);
+		return FALSE;
+	}
 
 	AfxEnableControlContainer();
 
@@ -69,9 +74,9 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	// 적절한 내용으로 수정해야 합니다.
 	SetRegistryKey(_T("Koino"));
 
-#ifdef LINKMEMINE_10
+#if defined(_LINKMEMINE_10)
 	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMine/Log/LMMLoginManager"));
-#else
+#elif defined(_LINKMEMINE_30)
 	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMineSE/Log/LMMLoginManager"));
 #endif
 
