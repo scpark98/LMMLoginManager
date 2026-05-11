@@ -22,25 +22,37 @@ class CLMMLoginManagerApp : public CWinApp
 {
 public:
 	CLMMLoginManagerApp();
+	bool				is_duplicate_running();
+
+	CString				m_cmd;
+
+	//자동 설치 패키지를 통한 setup 후 로그인 여부. 메인 및 LoginDlg에서 참조하므로 App 클래스의 멤버로 선언함.
+	bool				m_auto_setup = false;
+
+	void				terminate_other_processes();
 
 	//이 경로는 AutoPatcher(통합 버전)의 m_reg_path와 동일해야 한다.
 #if defined(_LINKMEMINE_10)
-	CString				m_svc_name = _T("LMMSvcAgentService");
+	CString				m_service_name = _T("LMMSvcAgentService");
 	CString				m_reg_path = _T("SOFTWARE\\LinkMeMine.service\\LMMAgent");
 	int					m_udp_port = 20177;
 #elif defined(_LINKMEMINE_30)
-	CString				m_svc_name = _T("LMMSEAgentService");
+	CString				m_service_name = _T("LMMSEAgentService");
 	CString				m_reg_path = _T("SOFTWARE\\LinkMeMineSE\\LMMAgent");
 	int					m_udp_port = 20178;
 #endif
 
 	CSCMessageBox		m_msgbox;
 
+	CString				m_product_name;
+
 	//config.ini 파일을 읽고 쓰지만 쓸 때 맨 마지막 위치에 기록되는 아쉬운 점이 있어서 읽는 용도로만 우선 사용한다.
 	EZIni				m_ini;
 	CString				m_server_ip;
 	int					m_server_port;
 	CString				m_config_path;
+
+	CSCColorTheme		m_theme;
 
 // 재정의입니다.
 public:

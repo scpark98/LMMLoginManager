@@ -395,18 +395,24 @@
     <ClInclude Include="$(CommonLibDir)\ResizeCtrl.h" />
     <ClInclude Include="$(CommonLibDir)\SCGdiplusBitmap.h" />
     <ClInclude Include="$(CommonLibDir)\thread\CSCThread\SCThread.h" />
+    <ClInclude Include="..\..\Common\Json\rapid_json\json.h" />
+    <ClInclude Include="DeviceGroupDlg.h" />
+    <ClInclude Include="DeviceNameDlg.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LMMLoginManager.h" />
     <ClInclude Include="LMMLoginManagerDlg.h" />
     <ClInclude Include="LmmProto.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PositionDlg.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ServiceSetting.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UdpSocket.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Util\d3des.h" />
     <ClInclude Include="Util\neturoauth.h" />
     <ClInclude Include="Util\neturoPassword.h" />
+    <ClInclude Include="VersionDlg.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(CommonLibDir)\CButton\GdiButton\GdiButton.cpp">
@@ -529,6 +535,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\Common\Json\rapid_json\json.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="DeviceGroupDlg.cpp" />
+    <ClCompile Include="DeviceNameDlg.cpp" />
     <ClCompile Include="LMMLoginManager.cpp" />
     <ClCompile Include="LMMLoginManagerDlg.cpp" />
     <ClCompile Include="pch.cpp">
@@ -541,6 +559,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PositionDlg.cpp" />
+    <ClCompile Include="ServiceSetting.cpp" />
     <ClCompile Include="UdpSocket.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="Util\d3des.c">
@@ -563,6 +583,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="VersionDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LMMLoginManager.rc" />
@@ -572,6 +593,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\images\close.png" />
+    <Image Include="res\images\close_dlg.png" />
     <Image Include="res\images\config_gray.png" />
     <Image Include="res\images\config_gray_24px.png" />
     <Image Include="res\images\email_gray_24px.png" />

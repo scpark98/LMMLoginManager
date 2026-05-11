@@ -10,7 +10,9 @@
 
 #include "Util.h"
 
+#include "Common/Functions.h"
 #include "Common/MemoryDC.h"
+#include "Common/Json/rapid_json/json.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -141,6 +143,8 @@ BOOL CLMMLoginManagerDlg::OnInitDialog()
 
 void CLMMLoginManagerDlg::init_dialog()
 {
+	SetWindowText(theApp.m_product_name);
+
 	LONG_PTR style = ::GetWindowLongPtr(m_hWnd, GWL_STYLE);
 
 	//캡션 + 모든 테두리 제거
@@ -164,7 +168,8 @@ void CLMMLoginManagerDlg::init_dialog()
 
 void CLMMLoginManagerDlg::init_controls()
 {
-	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
+	m_theme.copy_colors_from(theApp.m_theme);
+
 	//m_theme.set_color_theme(CSCColorTheme::color_theme_anysupport);
 	//m_theme.set_color_theme(CSCColorTheme::color_theme_helpu);
 	m_theme.cr_back = gGRAY(248);
@@ -207,7 +212,7 @@ void CLMMLoginManagerDlg::init_controls()
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
 	m_check_auto_login.SetCheck(theApp.m_ini["LOGIN"]["AUTO_LOGIN"]);
 
-	m_button_login.set_text(_T("로그인"));
+	m_button_login.set_text(_T("서버 연결중..."));
 	m_button_login.set_text_color(m_theme.cr_title_text, false);
 	m_button_login.set_back_color(m_theme.cr_title_back_inactive);// , false);
 	m_button_login.set_parent_back_color(m_theme.cr_back);
@@ -222,13 +227,14 @@ void CLMMLoginManagerDlg::init_controls()
 	m_static_version.set_blink(true, 600, 400);
 }
 
-void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
+void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 {
 	//서버 연결 체크 — 네트워크 호출은 워커에서, UI 작업만 invoke_ui 로 마샬링.
 	if (!is_server_reachable(theApp.m_server_ip, theApp.m_server_port))
 	{
 		invoke_ui([this]
 		{
+			m_button_login.set_text(_T("서버 연결 실패"));
 			m_static_version.set_blink(false);
 			m_static_version.set_text(_T("서버 연결 실패"), Gdiplus::Color::Crimson);
 			theApp.m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 확인하세요."));
@@ -240,10 +246,13 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 	if (th.stop_requested())
 		return;
 
+	m_button_login.set_text(_T("버전 확인중..."));
+
 	if (!get_current_version())
 	{
 		invoke_ui([this]
 			{
+				m_button_login.set_text(_T("현재 버전 확인 실패"));
 				theApp.m_msgbox.DoModal(_T("현재 버전을 얻어올 수 없습니다."));
 				OnBnClickedCancel();
 			});
@@ -257,7 +266,8 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 	{
 		invoke_ui([this]
 			{
-				theApp.m_msgbox.DoModal(_T("서버에서 버전정보를 얻어올 수 없습니다."));
+				m_button_login.set_text(_T("최신 버전 확인 실패"));
+				theApp.m_msgbox.DoModal(_T("서버에서 버전 정보를 얻어올 수 없습니다."));
 				OnBnClickedCancel();
 			});
 		return;
@@ -267,34 +277,53 @@ void CLMMLoginManagerDlg::thread_get_version_info(CSCThread& th)
 		{
 			if (m_current_version == m_latest_version)
 			{
+				m_button_login.set_text(_S(IDS_BTN_LOGIN));
 				m_static_version.set_blink(false);
 				m_static_version.set_halign(DT_RIGHT);
 				m_static_version.set_text_color(Gdiplus::Color::LightGray);
 				m_static_version.set_text(_T("ver ") + m_current_version);
-				m_edit_id.EnableWindow();
-				m_edit_pw.EnableWindow();
 				m_check_auto_login.EnableWindow();
 				m_check_save_pw.EnableWindow();
 				m_button_login.EnableWindow();
 
+				m_edit_id.set_text(CString(theApp.m_ini["LOGIN"]["ID"]));
+				CString pw = theApp.m_ini["LOGIN"]["PASS"];
+				if (!pw.IsEmpty())
+				{
+					pw = Util::EnCryptPassword(pw);
+					m_edit_pw.set_text(pw);
+				}
+
 				m_edit_id.SetFocus();
 
-				//자동 로그인 옵션이 켜져있으면 ID, PW를 입력시키고 자동 로그인 시도.
-				if (m_check_auto_login.GetCheck() == BST_CHECKED)
-				{
-					m_edit_id.set_text(CString(theApp.m_ini["LOGIN"]["ID"]));
-					CString pw = theApp.m_ini["LOGIN"]["PASS"];
-					if (!pw.IsEmpty())
-					{
-						pw = Util::EnCryptPassword(pw);
-						m_edit_pw.set_text(pw);
-					}
+				//로그인을 진행하기 전 현재 에이전트의 로그인 상태 정보를 요청한다.
+				//true : 이미 로그인 된 에이전트이므로 로그인 완료 상태로 처리하고 로그인 후처리 진행
+				//false : ReadLoginInfo() → 아직 로그인 전이고 자동 로그인 설정이라면 로그인 시도 진행(m_dlgLogin.Login())
+				get_device_onoff_status();
 
+				if (m_login_state == LOGIN_OK)
+				{
+					select_child_dialog();
+				}
+				//자동 로그인 옵션이 켜져있으면 ID, PW를 입력시키고 자동 로그인 시도.
+				else if (m_check_auto_login.GetCheck() == BST_CHECKED)
+				{
 					OnBnClickedButtonLogin();
+				}
+				else
+				{
+					//원래 이 블록은 맨 위에 있어야 하지만 LOGIN_OK 또는 자동 로그인시에는 다시 disable 처리를 하므로
+					//불필요하게 깜빡이게 된다.
+					//그래서 로그인 상태도 아니고 자동 로그인도 아닐 경우 여기서 enable 시켜야 깔끔하다.
+					m_edit_id.EnableWindow();
+					m_edit_pw.EnableWindow();
 				}
 			}
 			else
 			{
+				m_button_login.set_text(_S(IDS_BTN_UPDATE));
+				m_button_login.EnableWindow(FALSE);
+
 				CString str;
 
 				str.Format(_T("현재 버전(%s)보다 최신 버전(%s)가 존재합니다. 자동 패치를 진행합니다."), m_current_version, m_latest_version);
@@ -456,6 +485,9 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 	{
 		if (validate_login_input())
 		{
+			m_edit_id.EnableWindow(FALSE);
+			m_edit_pw.EnableWindow(FALSE);
+			Wait(10);
 			service_start();
 		}
 		else
@@ -479,7 +511,7 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 
 		set_login_state(LOGIN_BEFORE);
 		select_child_dialog();
-		terminate_other_process();
+		theApp.terminate_other_processes();
 	}
 }
 
@@ -489,7 +521,7 @@ bool CLMMLoginManagerDlg::service_start()
 	service_stop(true);
 
 	//서비스를 등록하고
-	logWrite(_T("install service (%s)..."), theApp.m_svc_name);
+	logWrite(_T("install service (%s)..."), theApp.m_service_name);
 	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
 	ShellExecute(NULL, _T("open"), agent_path, _T("-install"), NULL, SW_SHOW);
 
@@ -498,12 +530,12 @@ bool CLMMLoginManagerDlg::service_start()
 	{
 		DWORD error_code = 0;
 		CString detail;
-		DWORD status_code = service_command(theApp.m_svc_name, _T("query"), error_code, &detail);
+		DWORD status_code = service_command(theApp.m_service_name, _T("query"), error_code, &detail);
 
 		//등록이 실패한 경우
 		if (status_code < 1)
 		{
-			CString str = logWrite(_T("waiting for the service to be installed..."), theApp.m_svc_name, error_code, detail);
+			CString str = logWrite(_T("waiting for the service to be installed..."), theApp.m_service_name, error_code, detail);
 
 			Sleep(1000);
 			continue;
@@ -529,9 +561,9 @@ bool CLMMLoginManagerDlg::service_stop(bool include_delete)
 	CString detail;
 	CString str;
 
-	if (service_command(theApp.m_svc_name, _T("query"), error_code, &detail) == 0)
+	if (service_command(theApp.m_service_name, _T("query"), error_code, &detail) == 0)
 	{
-		//str = logWrite(_T("service name = %s, query fail. error_code = %d (%s)"), theApp.m_svc_name, error_code, detail);
+		//str = logWrite(_T("service name = %s, query fail. error_code = %d (%s)"), theApp.m_service_name, error_code, detail);
 		//theApp.m_msgbox.DoModal(str);
 		return true;
 	}
@@ -544,7 +576,7 @@ bool CLMMLoginManagerDlg::service_stop(bool include_delete)
 	{
 		if (include_delete)
 		{
-			if (service_command(theApp.m_svc_name, _T("delete"), error_code, &detail) == 0)
+			if (service_command(theApp.m_service_name, _T("delete"), error_code, &detail) == 0)
 			{
 				str = logWrite(_T("service delete fail. error_code = %d (%s)"), error_code, detail);
 				//theApp.m_msgbox.DoModal(str);
@@ -557,7 +589,7 @@ bool CLMMLoginManagerDlg::service_stop(bool include_delete)
 		}
 		else
 		{
-			if (service_command(theApp.m_svc_name, _T("stop"), error_code, &detail) == 0)
+			if (service_command(theApp.m_service_name, _T("stop"), error_code, &detail) == 0)
 			{
 				str = logWrite(_T("service stop fail. error_code = %d (%s)"), error_code, detail);
 				return false;
@@ -658,7 +690,7 @@ void CLMMLoginManagerDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == timer_check_version)
 	{
 		KillTimer(timer_check_version);
-		m_thread.start([this](CSCThread& th) { thread_get_version_info(th); });
+		m_thread.start([this](CSCThread& th) { thread_get_version_and_login(th); });
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
@@ -669,6 +701,8 @@ void CLMMLoginManagerDlg::select_child_dialog()
 	if (m_login_state == LOGIN_BEFORE)
 	{
 		m_button_restart.ShowWindow(SW_HIDE);
+		m_edit_id.EnableWindow(TRUE);
+		m_edit_pw.EnableWindow(TRUE);
 		m_edit_id.ShowWindow(SW_SHOW);
 		m_edit_pw.ShowWindow(SW_SHOW);
 		m_button_login.set_text(_T("로그인"));
@@ -682,23 +716,99 @@ void CLMMLoginManagerDlg::select_child_dialog()
 	}
 }
 
-void CLMMLoginManagerDlg::terminate_other_process()
+//online(>0), offline(0), request error(<0)
+int CLMMLoginManagerDlg::get_device_onoff_status()
 {
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nScreenClient.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient2.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer2.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDClient.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDServer.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im hwmon.exe"), NULL, SW_HIDE);
+	logWrite(_T("%s"), __function__);
 
-	/*
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nScreenClient.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDClient.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDServer.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDClient.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDServer.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\hwmon.exe"));
-	*/
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
+	CString device_id = theApp.m_ini["SERVER"]["DID"];
+	CString header = _T("token: ") + agent_token + _T("\r\n");
+
+	CRequestUrlParams param(theApp.m_server_ip, theApp.m_server_port, _T("/agent/api/v1.0/GetLmmDeviceOnOff"), _T("POST"));
+	param.body.Format(_T("{\"device_id\":\"%s\"}"), device_id);
+	param.headers.push_back(header);
+
+	logWrite(_T("param : %s"), param.get_param_str());
+	request_url(&param);
+	logWrite(_T("status = %d, result = %s"), param.status, param.result);
+
+	if (param.status != HTTP_STATUS_OK)
+	{
+		return -1;
+	}
+	else
+	{
+		Json json;
+
+		if (!json.parse(param.result))
+		{
+			logWrite(_T("json parsing error."));
+			return -1;
+		}
+
+		logWrite(_T("result = \n%s"), json.get_json_str());
+
+		rapidjson::Value& objs = json.doc["objects"];
+
+		if (objs.Size() > 0)
+		{
+			CString deviceName = objs[0]["device_name"].GetCString();
+			CString onOffStr = objs[0]["b_onoff"].GetCString();
+			if (onOffStr == _T("TRUE"))
+			{
+				m_login_state = LOGIN_OK;
+			}
+			else
+			{
+				m_login_state = LOGIN_BEFORE;
+			}
+
+			if (m_login_state == LOGIN_BEFORE)
+			{
+				CString parameter = _S(IDS_AGENT_CMD_STOP);
+				ShellExecute(NULL, _T("open"), get_exe_directory(true) + _T("LMMAgent.exe"), parameter, NULL, SW_SHOW);
+			}
+
+			theApp.m_ini["SERVER"]["DNAME"] = deviceName;
+
+			return m_login_state;
+		}
+	}
+
+	return -1;
+}
+
+void CLMMLoginManagerDlg::request_put_device_env_info()
+{
+	CString browser_path;
+	CString browser_version;
+	CString default_browser = get_default_browser_info(&browser_path, &browser_version);
+
+	CRequestUrlParams params(theApp.m_server_ip, theApp.m_server_port, _T("/lmm/api/v1.0/device_env_info"), _T("POST"));
+	params.use_thread = true;
+	params.body.Format(_T("{\"method\": \"PUT\", \"request_type\": \"agent\", \"login_id\": \"%s\", \"device_id\": \"%s\", \"os_type\": 1, \"os_str\": \"%s\", \"default_browser\": \"%s\", \"default_browser_version\": \"%s\"}"),
+		CString(theApp.m_ini["LOGIN"]["ID"]),// Config::LoadConfigString(_T("LOGIN"), _T("ID"), _T("")),
+		CString(theApp.m_ini["SERVER"]["DID"]),//Config::LoadConfigString(_T("SERVER"), _T("DID"), _T("")),
+		get_windows_version_number(),
+		default_browser,
+		browser_version);
+
+	logWrite(_T("%s"), params.get_param_str());
+	request_url(&params);
+	logWrite(_T("status = %d, result = %s"),
+		params.status, params.result);
+
+	if (params.status == HTTP_STATUS_OK)
+	{
+		logWrite(_T("request success."));
+		return;
+	}
+	else
+	{
+		logWriteE(_T("request fail."));
+		return;
+	}
+
+	OnBnClickedCancel();
 }

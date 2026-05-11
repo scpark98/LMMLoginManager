@@ -96,6 +96,24 @@
     <ClInclude Include="LmmProto.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\Json\rapid_json\json.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="ServiceSetting.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VersionDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PositionDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceNameDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceGroupDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LMMLoginManager.cpp">
@@ -155,6 +173,24 @@
     <ClCompile Include="UdpSocket.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Common\Json\rapid_json\json.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="ServiceSetting.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VersionDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DeviceNameDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DeviceGroupDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LMMLoginManager.rc">
@@ -201,6 +237,9 @@
       <Filter>리소스 파일</Filter>
     </Image>
     <Image Include="res\images\IDB_LOGO.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\images\close_dlg.png">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>

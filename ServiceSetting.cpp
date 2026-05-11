@@ -1,8 +1,6 @@
-#include "StdAfx.h"
+﻿#include "pch.h"
+#include "LMMLoginManager.h"
 #include "ServiceSetting.h"
-#include "Config.h"
-#include "Util.h"
-
 
 CString ServiceSetting::strManagerToken = _T("");
 
@@ -134,11 +132,13 @@ BOOL ServiceSetting::LoadServiceSetting()
 
 CString ServiceSetting::GetProgramType()
 {
-	return Config::GetConfigValue(_T("TYPE"), _T("PROGRAM_TYPE"), _T(""), CUtil::GetProgramTypePath());
+	return theApp.m_ini["TYPE"]["PROGRAM_TYPE"];
+	//return Config::GetConfigValue(_T("TYPE"), _T("PROGRAM_TYPE"), _T(""), CUtil::GetProgramTypePath());
 }
 
 
 CString ServiceSetting::GetSetting()
 {
-	return Config::GetConfigValue(_T("TYPE"), _T("SETTING"), _T(""), CUtil::GetProgramTypePath());
+	return theApp.m_ini["TYPE"]["SETTING"];
+	//return Config::GetConfigValue(_T("TYPE"), _T("SETTING"), _T(""), CUtil::GetProgramTypePath());
 }

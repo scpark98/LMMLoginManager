@@ -96,8 +96,6 @@ void CUdpSocket::OnReceive(int nErrorCode)
 
 		default:
 			{
-				//CString sStr((char*)Lb_Buffer);
-			
 				switch(msg.command)
 				{
 					case LM_AGENT_EXECUTE_OK:
@@ -115,14 +113,15 @@ void CUdpSocket::OnReceive(int nErrorCode)
 							//20240723 scpark 로그인이 완료되면 앱을 종료시키지 말고 완료된 모습을 그대로 표시하자.
 							//20240729 scpark 로그인 완료 후 창을 남겨두지 않고 종료시키도록 변경
 							//20240731 scpark 로그인 완료 후 메인창을 그냥 닫지말고 업데이트를 수행한 후 종료시키자.
-							///((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->check_update_and_exit();
+							//20260511 scpark 로그인 완료 후 사용자 구동 환경 정보를 DB에 업데이트 한 후 종료시킨다.
+							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->request_put_device_env_info();
 						}
 						break;
 					case LM_AGENT_SERVER_CON_FAIL:
 						{
 							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
-								theApp.m_msgbox.DoModal(_T("connect failed"));// _S(IDS_CONNECT_FAIL));
+								theApp.m_msgbox.DoModal(_S(IDS_CONNECT_FAIL));
 								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();

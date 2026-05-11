@@ -7,6 +7,16 @@
 #include "LMMLoginManager.h"
 #include "LMMLoginManagerDlg.h"
 
+#include "Common/messagebox/CSCMessageBox/SCMessageBox.h"
+
+
+#include "VersionDlg.h"
+#include "PositionDlg.h"
+#include "DeviceNameDlg.h"
+#include "ServiceSetting.h"
+#include "DeviceGroupDlg.h"
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -75,35 +85,302 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	SetRegistryKey(_T("Koino"));
 
 #if defined(_LINKMEMINE_10)
-	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMine/Log/LMMLoginManager"));
+	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMine/Log/LMMLgiMgr"));
 #elif defined(_LINKMEMINE_30)
-	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMineSE/Log/LMMLoginManager"));
+	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMineSE/Log/LMMLgiMgr"));
 #endif
 
 	gLog.write_start_log();
 
+
+	//20240729 scpark AutPatcher.exe_ 를 AutPatcher.exe로 변경하는 update.bat 파일이 돌지 않는 경우가
+	//특정 사용자에서 발생하여 update.bat이 하는 액션을 LMMLgiMgr.exe, LMMAgent.exe에 추가한다.
+	//LMMAgent.exe 코드를 살펴보니 이미 _tWinMain에 이와 같이 동작하는 코드가 구현되어 있음.
+	CString oldFile;
+	CString newFile;
+
+	newFile.Format(_T("%s\\AutoPatcher.exe_"), get_exe_directory());
+	oldFile.Format(_T("%s\\AutoPatcher.exe"), get_exe_directory());
+
+	if (PathFileExists(newFile))
+	{
+		DeleteFile(oldFile);
+		MoveFileEx(newFile, oldFile, MOVEFILE_REPLACE_EXISTING);
+	}
+
+	m_product_name = get_file_property(_T(""), _T("ProductName"));
 	m_config_path.Format(_T("%s\\config.ini"), get_exe_directory());
 	m_ini.SetFileName(m_config_path);
 	m_server_ip = m_ini["SERVER"]["LIP"];
 	m_server_port = m_ini["SERVER"]["LPORT"];
 
-	CLMMLoginManagerDlg dlg;
-	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
-	if (nResponse == IDOK)
+	ServiceSetting::LoadServiceSetting();
+	BOOL bDeleteDevice = FALSE;
+	BOOL bUIStart = TRUE;
+
+	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
+
+	if (__argc >= 2)
 	{
-		// TODO: 여기에 [확인]을 클릭하여 대화 상자가 없어질 때 처리할
-		//  코드를 배치합니다.
+		m_cmd = __targv[1];
+		m_cmd.Trim();
+
+		bUIStart = FALSE;
+
+		if (m_cmd == _T("-about")) // 정보
+		{
+			CVersionDlg dlg;
+			dlg.DoModal();
+		}
+		else if (m_cmd == _T("-logoff"))
+		{
+			ExitWindowsEx(EWX_LOGOFF, 0);
+			return FALSE;
+		}
+		else if (m_cmd == _T("-pos")) // 화면 공유 위치 설정
+		{
+			CPositionDlg dlg;
+			dlg.DoModal();
+		}
+		else if (m_cmd == _T("-name")) // 장치 이름 변경
+		{
+			CDeviceNameDlg dlg;
+			dlg.DoModal();
+		}
+		else if (m_cmd == _T("-group")) // 그룹 변경
+		{
+			CDeviceGroupDlg dlgGroup;
+			dlgGroup.set_company_key(m_ini["SERVER"]["COMPANY_KEY"]);// Config::LoadCompanyFK());
+			dlgGroup.DoModal();
+		}
+		else if (m_cmd == _T("-messagebox")) // 메시지박스 표시
+		{
+			for (int i = 1; i < __argc; i++)
+				logWrite(_T("-messagebox cmd. __targv[%d] = %s"), i, __targv[i]);
+
+			//삼성생명에서는 단순 메시지박스가 아닌 미등록, 이미 등록일 경우의 메시지를 표시한다.
+			if (__argc >= 4)
+			{
+				int type = _ttoi(__targv[2]);
+				CString msg = __targv[3];
+				CString title = (__argc > 4 ? __targv[4] : _T(""));
+				int timeout = (__argc > 5 ? _ttoi(__targv[5]) : 0);
+				int hAlign = (__argc > 6 ? _ttoi(__targv[6]) : -1);
+
+				CSCMessageBox dlg;
+				dlg.DoModal(msg, type == 0 ? MB_OK : MB_OKCANCEL, timeout);
+
+				return FALSE;
+			}
+		}
+		else if (m_cmd == _T("-exit")) // 종료
+		{
+			CString strMessage = _S(IDS_EXIT_AGENT);
+			CSCMessageBox dlg;
+
+			if (dlg.DoModal(strMessage, MB_OKCANCEL) == IDOK)
+			{
+				int nAutoLogin = m_ini["LOGIN"]["AUTO_LOGIN"];// Config::LoadIsAutoLogin();
+
+				logWrite(_T("nAutoLogin = %d."), nAutoLogin);
+
+				DWORD status = 0;
+				DWORD error_code = 0;
+				CString detail;
+
+				if (nAutoLogin == 0)
+				{
+					//theApp.m_agent_control.RemoveAgent();
+					status = service_command(m_service_name, _T("-delete"), error_code, &detail);
+					logWrite(_T("service cmd delete. status = %d, error_code = %d, detail = %s"), status, error_code, detail);
+				}
+				else
+				{
+					//theApp.m_agent_control.StopAgent(true);
+					status = service_command(m_service_name, _T("-stop"), error_code, &detail);
+					logWrite(_T("service cmd stop. status = %d, error_code = %d, detail = %s"), status, error_code, detail);
+				}
+
+				//Config::SaveManualLoginStatus(0);
+				m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
+
+				terminate_other_processes();
+			}
+		}
+		else if (m_cmd == _T("-logout") || m_cmd == _T("-logoutservice")) // 로그아웃
+		{
+			CString strMessage = _S(IDS_EXIT_AGENT);
+
+			CSCMessageBox dlg;
+
+			if (dlg.DoModal(strMessage, MB_OKCANCEL) == IDOK)
+			{
+				strMessage = _S(IDS_AGENT_STOP_WAIT);
+				CSCMessageBox dlg2;
+				dlg2.DoModal(_S(IDS_AGENT_STOP_WAIT));
+
+				//Config::SaveManualLoginStatus(0);
+				//Config::SaveIsAutoLogin(0);
+				m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
+				m_ini["LOGIN"]["AUTO_LOGIN"] = 0;
+
+				terminate_other_processes();
+			}
+			// 2023.04.26 seodongho, 서비스 로그 아웃시에 디바이스를 삭제할것인지 확인
+			if (m_cmd == _T("-logoutservice"))
+				bDeleteDevice = TRUE;
+			bUIStart = TRUE;
+		}
+		else if (m_cmd == _T("-delete")) // 장치 삭제
+		{
+			bDeleteDevice = TRUE;
+		}
+		//파라미터가 넘어왔는데 위의 지정된 cmd가 아닌 경우에 대한 처리 추가.
+		else if (!m_cmd.IsEmpty())
+		{
+			//cmd가 http:// 또는 https://로 시작되면 ShellExecute()으로 실행시켜서 기본 브라우저로 열리게 한다.
+			if (m_cmd.Left(7) == _T("http://") || m_cmd.Left(8) == _T("https://"))
+			{
+				logWrite(_T("param[1] is url. call ShellExecute()"));
+				ShellExecute(NULL, _T("open"), m_cmd, 0, 0, SW_SHOWNORMAL);
+			}
+			//일반 실행파일을 실행시키는 경우
+			else
+			{
+				CString param;
+				logWrite(_T("m_cmd = %s. execute file. call ShellExecute()"), m_cmd);
+				if (__argc >= 3)
+				{
+					param = __targv[2];
+					logWrite(_T("param = %s"), param);
+				}
+				ShellExecute(NULL, _T("open"), m_cmd, param, 0, SW_SHOWNORMAL);
+			}
+		}
+
+		if (bDeleteDevice)
+		{
+			//scpark 20250502 uninstall시에 DB에서 장비 삭제는 선택이 아니라 필수이므로
+			//이를 물어보는 대화상자도 띠워서도 안된다. 무조건 DB에서도 삭제시킨다.
+			//CDeviceDeleteDlg dlg;
+			//if (dlg.DoModal() == IDOK)
+			{
+				CRequestUrlParams param(m_server_ip, m_server_port, _T("/api/v1.0/linkmemine/DeleteLmmDeviceInfo"), _T("POST"));
+
+				CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
+				CString device_id = theApp.m_ini["SERVER"]["DID"];
+				CString header = _T("token: ") + agent_token + _T("\r\n");
+
+				param.headers.push_back(header);
+				param.body.Format(_T("{\"user_id\":\"%s\", \"device_id\":\"%s\"}"), m_ini["LOGIN"]["ID"], device_id);
+
+				logWrite(_T("param : %s"), param.get_param_str());
+				request_url(&param);
+				logWrite(_T("status = %d, result = %s"), param.status, param.result);
+
+				if (param.status != HTTP_STATUS_OK)
+				{
+					logWriteE(_T("fail to delete device from DB."));
+				}
+				else
+				{
+					logWriteE(_T("success to delete device from DB."));
+				}
+				/*
+				ApiParams* apiParams = new ApiParams[1];
+				apiParams[0].dlg = NULL;
+#ifndef LMM_LINUX
+				apiParams[0].address.Format(_T("/api/v1.0/linkmemine/DeleteLmmDeviceInfo"));
+				apiParams[0].method = _T("DELETE");
+				apiParams[0].serverIp = Config::LoadNetAPIIP();
+				apiParams[0].serverPort = _ttoi(Config::LoadNetAPIPort());
+#else
+				apiParams[0].address.Format(_T("/agent/api/v1.0/DeleteLmmDeviceInfo"));
+				apiParams[0].method = _T("POST");
+				apiParams[0].serverIp = Config::LoadFlaskAPIIP();
+				apiParams[0].serverPort = _ttoi(Config::LoadFlaskAPIPort());
+#endif
+				apiParams[0].type = 0;
+
+				if (apiParams[0].serverPort == 443 || apiParams[0].serverPort == 8443)
+				{
+					apiParams[0].useHttps = 1;
+				}
+				else
+				{
+					apiParams[0].useHttps = 0;
+				}
+
+				apiParams[0].useTimeout = 1;
+				apiParams[0].token = Config::LoadAgentToken();
+				apiParams[0].parameter.Format(_T("{\"user_id\":\"%s\", \"device_id\":\"%s\"}"),
+					Config::LoadConfigString(_T("LOGIN"), _T("ID"), _T("")),
+					Config::LoadDeviceID());
+				apiParams[0].afterFunc = 0;
+				apiParams[0].size = 1;
+				apiParams[0].index = 1;
+				apiParams[0].useDunamu = FALSE;
+
+				Api api;
+				api.ApiController(apiParams);
+				delete apiParams;
+				*/
+			}
+		}
+
+		//파라미터가 넘어왔는데 위의 지정된 cmd가 아닌 경우에 대한 처리 추가.
+		if (!m_cmd.IsEmpty())
+		{
+			//cmd가 http:// 또는 https://로 시작되면 ShellExecute()으로 실행시켜서 기본 브라우저로 열리게 한다.
+			if (m_cmd.Left(7) == _T("http://") || m_cmd.Left(8) == _T("https://"))
+			{
+				logWrite(_T("m_cmd = %s. url. call ShellExecute()"), m_cmd);
+				ShellExecute(NULL, _T("open"), m_cmd, 0, 0, SW_SHOWNORMAL);
+			}
+			//일반 실행파일을 실행시키는 경우
+			else
+			{
+				CString param;
+				logWrite(_T("m_cmd = %s. execute file. call ShellExecute()"), m_cmd);
+				if (__argc >= 3)
+				{
+					param = __targv[2];
+					logWrite(_T("param = %s"), param);
+				}
+				ShellExecute(NULL, _T("open"), m_cmd, param, 0, SW_SHOWNORMAL);
+			}
+		}
 	}
-	else if (nResponse == IDCANCEL)
+	else //if(__argc < 2)
 	{
-		// TODO: 여기에 [취소]를 클릭하여 대화 상자가 없어질 때 처리할
-		//  코드를 배치합니다.
+		logWrite(_T("no params."));
 	}
-	else if (nResponse == -1)
+
+	if (bUIStart)
 	{
-		TRACE(traceAppMsg, 0, "경고: 대화 상자를 만들지 못했으므로 애플리케이션이 예기치 않게 종료됩니다.\n");
-		TRACE(traceAppMsg, 0, "경고: 대화 상자에서 MFC 컨트롤을 사용하는 경우 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS를 수행할 수 없습니다.\n");
+		// 중복 실행 체크
+		if (is_duplicate_running())
+		{
+			if (pShellManager != NULL)
+			{
+				delete pShellManager;
+			}
+			return FALSE;
+		}
+
+		CLMMLoginManagerDlg dlg;
+		m_pMainWnd = &dlg;
+		INT_PTR nResponse = dlg.DoModal();
+		if (nResponse == IDOK)
+		{
+			// TODO: Place code here to handle when the dialog is
+			//  dismissed with OK
+		}
+		else if (nResponse == IDCANCEL)
+		{
+			// TODO: Place code here to handle when the dialog is
+			//  dismissed with Cancel
+		}
 	}
 
 	// 위에서 만든 셸 관리자를 삭제합니다.
@@ -121,3 +398,51 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	return FALSE;
 }
 
+bool CLMMLoginManagerApp::is_duplicate_running()
+{
+	logWrite(_T("%s"), __function__);
+
+	// 중복 실행 체크
+	HANDLE mutex = CreateMutex(NULL, FALSE, _T("LMMLoginMgr for Service"));
+	if (mutex == NULL)
+		return false;
+
+	// Check that the mutex didn't already exist
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		logWrite(_T("duplicated running. exit."));
+
+		HWND hWnd = ::FindWindow(NULL, m_product_name);
+
+		if (hWnd != NULL)
+		{
+			ShowWindow(hWnd, SW_RESTORE);
+			SetForegroundWindow(hWnd);
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+void CLMMLoginManagerApp::terminate_other_processes()
+{
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nScreenClient.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient2.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer2.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDClient.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDServer.exe"), NULL, SW_HIDE);
+	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im hwmon.exe"), NULL, SW_HIDE);
+
+	/*
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nScreenClient.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDClient.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDServer.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDClient.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDServer.exe"));
+	kill_process_by_fullpath(get_exe_directory() + _T("\\hwmon.exe"));
+	*/
+}

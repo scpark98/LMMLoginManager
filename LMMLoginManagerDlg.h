@@ -25,6 +25,8 @@ public:
 	void				set_login_state(int login_state) { m_login_state = login_state; }
 	void				select_child_dialog();
 
+	void				request_put_device_env_info();
+
 // 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_LMMLOGINMANAGER_DIALOG };
@@ -41,14 +43,13 @@ protected:
 	CSCGdiplusBitmap	m_logo;
 
 	CSCThread			m_thread;
-	void				thread_get_version_info(CSCThread& th);
+	void				thread_get_version_and_login(CSCThread& th);
 
 	CUdpSocket			m_udpSocket;		// UDP Server
 
 	static constexpr UINT WM_APP_UI_INVOKE = WM_APP + 2;
 	afx_msg LRESULT		on_ui_invoke(WPARAM wParam, LPARAM lParam);
 
-	void				terminate_other_process();
 private:
 	void				invoke_ui(std::function<void()> func);
 
@@ -64,6 +65,9 @@ protected:
 	bool				get_current_version();
 	bool				get_latest_version();
 	bool				validate_login_input();
+
+	//online(>0), offline(0), request error(<0)
+	int					get_device_onoff_status();
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.

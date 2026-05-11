@@ -404,14 +404,14 @@ BOOL Util::ServiceStop()
 
 	if (!GetIsService())
 	{
-		theApp.m_svc_name = _T("LMMSvcAgentService");
+		theApp.m_service_name = _T("LMMSvcAgentService");
 	}
 
 	SERVICE_STATUS serviceStatus;
 	ZeroMemory(&serviceStatus, sizeof(SERVICE_STATUS));
 
 	SC_HANDLE hScm = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-	SC_HANDLE hService = OpenService(hScm, theApp.m_svc_name, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE hService = OpenService(hScm, theApp.m_service_name, SC_MANAGER_ALL_ACCESS);
 
 	QueryServiceStatus(hService, &serviceStatus); // 서비스 상태 얻기
 	if (serviceStatus.dwCurrentState != SERVICE_STOPPED) // 서비스가 중지 상태가 아니면
