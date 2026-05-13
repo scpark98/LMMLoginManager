@@ -68,10 +68,14 @@
 #define IDS_MSG_START_UPDATE            148
 #define IDB_CLOSE_DLG                   148
 #define IDS_MANUAL_LOGIN_ON_AUTO_SETUP_INSTALLED 149
+#define IDB_OFF                         149
 #define IDS_REGION_JA                   150
+#define IDB_ON                          150
 #define IDS_CLOSE_AFTER_SECONDS         151
+#define IDB_SAVE                        151
 #define IDS_ID_SYNC_NOTIFICATION        152
 #define IDS_AGENT_RESTART_AFTER_UPDATE  153
+#define IDS_GROUP_LOADING_INFO          154
 #define IDS_BTN_LOGIN_P2P               207
 #define IDS_LOGIN                       208
 #define IDC_BUTTON_CONFIG               1000
@@ -93,6 +97,15 @@
 #define IDC_STATIC_SERVER_VERSION_LABEL 1011
 #define IDC_STATIC_VERSION_LABEL        1015
 #define IDC_STATIC_TITLE                1018
+#define IDC_BUTTON_USE                  1019
+#define IDC_CHECK1                      1020
+#define IDC_CHECK_USE                   1020
+#define IDC_BUTTON3                     1021
+#define IDC_BUTTON_SAVE                 1021
+#define IDC_STATIC_MESSAGE              1021
+#define IDC_EDIT_NAME                   1022
+#define IDC_TREE                        1025
+#define IDC_STATIC_BUILD_PROCESSING     1026
 #define IDS_AGENT_CMD_START             2001
 #define IDS_AGENT_CMD_STOP              2002
 #define IDS_AGENT_CMD_CONFIG            2003
@@ -104,9 +117,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        149
+#define _APS_NEXT_RESOURCE_VALUE        152
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

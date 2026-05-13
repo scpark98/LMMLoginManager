@@ -26,16 +26,16 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
-	CGdiButton m_button_exit;
+	afx_msg void OnPaint();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnBnClickedButtonClose();
+	CSCStatic m_static_title;
+	CGdiButton m_button_close;
+
 	CSCStatic m_static_version_label;
 	CSCStatic m_static_version;
 	CSCStatic m_static_copyright;
-	virtual BOOL OnInitDialog();
-	afx_msg void OnPaint();
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	CGdiButton m_button_close;
-	afx_msg void OnBnClickedButtonClose();
-	CSCStatic m_static_title;
 };

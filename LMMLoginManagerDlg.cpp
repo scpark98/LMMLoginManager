@@ -175,7 +175,6 @@ void CLMMLoginManagerDlg::init_controls()
 	m_theme.cr_back = gGRAY(248);
 	m_theme.cr_parent_back = m_theme.cr_back;
 
-	theApp.m_msgbox.create(this, _S(IDS_TITLE));// , IDR_MAINFRAME);
 	//cr_back 등 dialog 측에서 가한 오버라이드까지 그대로 전달하기 위해 객체 자체를 넘김.
 	theApp.m_msgbox.set_color_theme(m_theme);
 

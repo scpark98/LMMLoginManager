@@ -25,11 +25,11 @@ CVersionDlg::~CVersionDlg()
 void CVersionDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_STATIC_TITLE, m_static_title);
+	DDX_Control(pDX, IDC_BUTTON_CLOSE, m_button_close);
 	DDX_Control(pDX, IDC_STATIC_VERSION_LABEL, m_static_version_label);
 	DDX_Control(pDX, IDC_STATIC_VERSION, m_static_version);
 	DDX_Control(pDX, IDC_STATIC_COPYRIGHT, m_static_copyright);
-	DDX_Control(pDX, IDC_BUTTON_CLOSE, m_button_close);
-	DDX_Control(pDX, IDC_STATIC_TITLE, m_static_title);
 }
 
 
@@ -60,6 +60,9 @@ BOOL CVersionDlg::OnInitDialog()
 	m_static_title.set_font_weight(FW_BOLD);
 	m_static_title.set_text(_T("  ") + _S(IDS_TITLE));
 
+	m_button_close.add_image(IDB_CLOSE);
+	m_button_close.set_back_color(m_theme.cr_title_back_inactive);
+
 	m_static_version_label.set_text_color(m_theme.cr_text);
 	m_static_version_label.set_back_color(m_theme.cr_back);
 	m_static_version_label.copy_properties(m_static_version);
@@ -68,8 +71,6 @@ BOOL CVersionDlg::OnInitDialog()
 	m_static_version.set_text(get_file_property(get_exe_directory() + _T("\\LMMAgent.exe"), _T("ProductVersion")));
 	m_static_copyright.set_text(get_file_property(get_exe_directory() + _T("\\LMMAgent.exe"), _T("LegalCopyright")));
 
-	m_button_close.add_image(IDB_CLOSE);
-	m_button_close.set_back_color(m_theme.cr_title_back_inactive);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
