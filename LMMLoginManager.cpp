@@ -120,7 +120,8 @@ BOOL CLMMLoginManagerApp::InitInstance()
 
 	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
 
-	theApp.m_msgbox.create(nullptr, _S(IDS_TITLE));// , IDR_MAINFRAME);
+	m_msgbox.create(nullptr, _S(IDS_TITLE));
+	m_msgbox.set_color_theme(m_theme);// CSCColorTheme::color_theme_dark_gray);
 
 	if (__argc >= 2)
 	{

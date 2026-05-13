@@ -142,13 +142,12 @@ void CDeviceGroupDlg::OnBnClickedOk()
 
 	if (true)//param.status != HTTP_STATUS_OK)
 	{
-		logWriteE(_T("fail to UpdateLmmDeviceGroup."));
-		theApp.m_msgbox.DoModal(_S(IDS_FAIL_LOAD_GROUP) + _T("IDS_FAIL_LOAD_GROUP\nIDS_FAIL_LOAD_GROUP\nIDS_FAIL_LOAD_GROUP\nIDS_FAIL_LOAD_GROUPIDS_FAIL_LOAD_GROUPIDS_FAIL_LOAD_GROUP"), MB_OK | MB_ICONEXCLAMATION);
-		OnBnClickedCancel();
+		logWriteE(_T("fail UpdateLmmDeviceGroup."));
+		theApp.m_msgbox.DoModal(_S(IDS_FAIL_SET_GROUP) + _T("\n<cr=red>abc<sz=26>def</cr></sz>\n마지막 <b><cr=royalblue><sz=16>라인"), MB_OK | MB_ICONEXCLAMATION);
 	}
 	else
 	{
-		logWrite(_T("success to UpdateLmmDeviceGroup. moved to %s"), data->GetGroupName());
+		logWrite(_T("success UpdateLmmDeviceGroup. moved to %s"), data->GetGroupName());
 
 		Json json;
 		if (!json.parse(param.result))
