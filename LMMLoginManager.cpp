@@ -329,29 +329,6 @@ BOOL CLMMLoginManagerApp::InitInstance()
 				*/
 			}
 		}
-
-		//파라미터가 넘어왔는데 위의 지정된 cmd가 아닌 경우에 대한 처리 추가.
-		if (!m_cmd.IsEmpty())
-		{
-			//cmd가 http:// 또는 https://로 시작되면 ShellExecute()으로 실행시켜서 기본 브라우저로 열리게 한다.
-			if (m_cmd.Left(7) == _T("http://") || m_cmd.Left(8) == _T("https://"))
-			{
-				logWrite(_T("m_cmd = %s. url. call ShellExecute()"), m_cmd);
-				ShellExecute(NULL, _T("open"), m_cmd, 0, 0, SW_SHOWNORMAL);
-			}
-			//일반 실행파일을 실행시키는 경우
-			else
-			{
-				CString param;
-				logWrite(_T("m_cmd = %s. execute file. call ShellExecute()"), m_cmd);
-				if (__argc >= 3)
-				{
-					param = __targv[2];
-					logWrite(_T("param = %s"), param);
-				}
-				ShellExecute(NULL, _T("open"), m_cmd, param, 0, SW_SHOWNORMAL);
-			}
-		}
 	}
 	else //if(__argc < 2)
 	{

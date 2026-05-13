@@ -652,10 +652,12 @@
   <ItemGroup>
     <Image Include="res\images\close.png" />
     <Image Include="res\images\close_dlg.png" />
+    <Image Include="res\images\computer.png" />
     <Image Include="res\images\config_gray.png" />
     <Image Include="res\images\config_gray_24px.png" />
     <Image Include="res\images\email_gray_24px.png" />
     <Image Include="res\images\eye_gray_24px.png" />
+    <Image Include="res\images\folder.png" />
     <Image Include="res\images\IDB_LOGO.png" />
     <Image Include="res\images\IDB_OFF.png" />
     <Image Include="res\images\IDB_ON.png" />
@@ -664,6 +666,8 @@
     <Image Include="res\images\minimize_gray_24px.png" />
     <Image Include="res\images\password_gray_24px.png" />
     <Image Include="res\images\quit_gray_24px.png" />
+    <Image Include="res\images\screen.png" />
+    <Image Include="res\images\tablet.png" />
     <Image Include="res\images\user_gray_24px.png" />
     <Image Include="res\LMMLoginManager.ico" />
   </ItemGroup>

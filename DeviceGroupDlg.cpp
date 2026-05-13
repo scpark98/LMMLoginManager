@@ -8,6 +8,7 @@
 
 #include "Common/MemoryDC.h"
 
+
 // CDeviceGroupDlg 대화 상자
 
 IMPLEMENT_DYNAMIC(CDeviceGroupDlg, CDialogEx)
@@ -74,7 +75,44 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 	m_button_ok.set_font_weight(FW_BOLD);
 
 	m_tree.set_color_theme(m_theme);
-	m_tree.set_draw_border();
+	m_tree.set_draw_border(false);
+
+	//트리 배경을 dlg 배경과 분리해서 "패널" 느낌. cr_back(64,64,64) 보다 +12 밝게.
+	//m_tree.set_back_color(get_weak_color(m_theme.cr_back, 12));
+
+	//트리는 본 화면의 주역이므로 폰트를 키워 가독성 강조 (기본 9 → 11pt).
+	m_tree.set_font_size(10);
+
+	//IDB_TABLET PNG 을 트리 imagelist 로 등록.
+	//CSCGdiplusBitmap::load(UINT) 가 PNG 리소스 로딩 후 Gdiplus::Bitmap 으로 보관.
+	//Gdiplus::Bitmap::GetHICON 으로 HICON 변환 → 기존 set_imagelist(vector<HICON>) 사용.
+	//imagelist 가 HICON 을 내부 복사하므로 등록 후 즉시 DestroyIcon 으로 해제.
+	{
+		CSCGdiplusBitmap img;
+		std::vector<HICON> icons;
+		if (img.load(UINT(IDB_TABLET)) && img.m_pBitmap)
+		{
+			HICON h = NULL;
+			if (img.m_pBitmap->GetHICON(&h) == Gdiplus::Ok && h)
+				icons.push_back(h);
+		}
+
+		if (!icons.empty())
+		{
+			m_tree.set_imagelist(icons, 16);
+			for (HICON h : icons)
+				::DestroyIcon(h);
+		}
+	}
+
+	//트리 주변에 좌우 padding 추가 — dlg edge 에 붙어있던 답답함 해소.
+	{
+		CRect rc;
+		m_tree.GetWindowRect(rc);
+		ScreenToClient(rc);
+		rc.DeflateRect(8, 4, 8, 4);
+		m_tree.MoveWindow(rc);
+	}
 
 	SetTimer(timer_get_group_list, 500, NULL);
 
@@ -85,6 +123,41 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 void CDeviceGroupDlg::OnBnClickedOk()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	HTREEITEM hItem = m_tree.GetSelectedItem();
+	auto data = (GroupInfo*)m_tree.GetItemData(hItem);
+	
+	trace(data->GetGroupName());
+
+	CString header = _T("token: ") + theApp.m_ini["LOGIN"]["TOKEN"].to_CString() + _T("\r\n");
+
+	CRequestUrlParams param(theApp.m_server_ip, theApp.m_server_port, _T("/agent/api/v1.0/UpdateLmmDeviceGroup"), _T("POST"));
+
+	param.body.Format(_T("{\"device_id\":\"%s\", \"group_fk\":%s}"), theApp.m_ini["SERVER"]["DID"].to_CString(), data->GetGroupNum());
+	param.headers.push_back(header);
+
+	logWrite(_T("param = %s"), param.get_param_str());
+	request_url(&param);
+
+	logWrite(_T("status = %d, result = %s"), param.status, param.result);
+
+	if (true)//param.status != HTTP_STATUS_OK)
+	{
+		logWriteE(_T("fail to UpdateLmmDeviceGroup."));
+		theApp.m_msgbox.DoModal(_S(IDS_FAIL_LOAD_GROUP) + _T("IDS_FAIL_LOAD_GROUP\nIDS_FAIL_LOAD_GROUP\nIDS_FAIL_LOAD_GROUP\nIDS_FAIL_LOAD_GROUPIDS_FAIL_LOAD_GROUPIDS_FAIL_LOAD_GROUP"), MB_OK | MB_ICONEXCLAMATION);
+		OnBnClickedCancel();
+	}
+	else
+	{
+		logWrite(_T("success to UpdateLmmDeviceGroup. moved to %s"), data->GetGroupName());
+
+		Json json;
+		if (!json.parse(param.result))
+		{
+			theApp.m_msgbox.DoModal(_T("읽어온 그룹정보에 오류가 있습니다."));
+			return;
+		}
+	}
+
 	CDialogEx::OnOK();
 }
 
@@ -148,13 +221,13 @@ void CDeviceGroupDlg::get_group_list()
 
 	if (param.status != HTTP_STATUS_OK)
 	{
-		logWriteE(_T("fail to get GetLmmGroupList."));
+		logWriteE(_T("fail GetLmmGroupList."));
 		theApp.m_msgbox.DoModal(_S(IDS_FAIL_LOAD_GROUP));
 		OnBnClickedCancel();
 	}
 	else
 	{
-		logWriteE(_T("success to get GetLmmGroupList"));
+		logWrite(_T("success GetLmmGroupList"));
 
 		Json json;
 		if (!json.parse(param.result))
@@ -292,13 +365,9 @@ void CDeviceGroupDlg::build_tree()
 		}
 
 		//트리에 넣고 HTREEITEM 값을 기억해놓는다.
-		int img_idx = 2;
-
-		//모든 에이전트
-		if (m_groups.at(i)->GetGroupNum() == _T("-2"))
-			img_idx = 0;
-		else if (m_groups.at(i)->GetGroupNum() == _T("-1"))
-			img_idx = 1;
+		//imagelist 에는 윈도우 폴더 아이콘(index 0) 만 등록되어 있으므로 모든 그룹이 동일 아이콘.
+		//그룹 종류별로 다른 아이콘이 필요해지면 OnInitDialog 의 set_imagelist 에 추가하고 분기.
+		int img_idx = 0;
 
 		m_groups.at(i)->m_hItem = m_tree.InsertItem(m_groups.at(i)->GetGroupName(), img_idx, img_idx, hItem, TVI_LAST);
 

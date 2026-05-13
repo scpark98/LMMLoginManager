@@ -286,5 +286,17 @@
     <Image Include="res\images\IDB_SAVE.png">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="res\images\tablet.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\images\screen.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\images\computer.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\images\folder.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>
