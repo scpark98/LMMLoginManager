@@ -125,7 +125,11 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	m_msgbox.set_color_theme(CSCColorTheme::color_theme_dark_gray);
 
 	//for test
-	//m_msgbox.DoModal(_T("서버 접속 실패 (<cr=crimson>error = -1)</cr>\n서버에 접근할 수 없습니다.</cr>\n\n<b>방화벽</b> 또는 <b>외부 네트워크 접근</b>이 가능한 환경인지\n먼저 확인하시기 바랍니다."), MB_ICONSTOP);
+	int res = m_msgbox.DoModal(_T("서버 접속 실패 (<cr=crimson>error = -1)</cr>\n서버에 접근할 수 없습니다.</cr>\n\n<b>방화벽</b> 또는 <b>외부 네트워크 접근</b>이 가능한 환경인지\n먼저 확인하시기 바랍니다."), MB_OKCANCEL | MB_ICONSTOP);
+	trace(res);
+
+	res = m_msgbox.DoModal(_T("두번째 상자"), MB_OKCANCEL | MB_ICONSTOP);
+	trace(res);
 
 	if (__argc >= 2)
 	{
