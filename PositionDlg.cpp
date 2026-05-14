@@ -55,8 +55,6 @@ BOOL CPositionDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	m_msgbox.create(this, _S(IDS_TITLE));
-
 	m_ini.SetFileName(get_exe_directory() + _T("\\share.ini"));
 
 	int nLeft = m_ini["SHARE"]["LEFT"];
@@ -219,7 +217,7 @@ void CPositionDlg::OnPaint()
 		textSF.SetAlignment(Gdiplus::StringAlignmentNear);
 		textSF.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
-		CString strDraw = _S(IDS_TITLE) + _T(" Position");
+		CString strDraw = _S(IDS_TITLE);
 
 		Gdiplus::RectF boundRect;
 		g.MeasureString(strDraw, -1, &titleFont, Gdiplus::PointF(7, 1), &boundRect);
@@ -288,6 +286,11 @@ typedef HRESULT(WINAPI* DwmGetWindowAttributeFunction) (
 	);
 void CPositionDlg::OnBnClickedBtnSave()
 {
+	//20260514 scpark
+	//저장버튼을 클릭하면 1,1 오프셋 다운 효과로 그려지는데 마우스를 떼자마자 바로 메시지박스가 표시되면
+	//그 효과가 가려진다. 약간의 인위적인 딜레이를 준다.
+	Wait(500);
+
 	CRect rect;
 	//if (CUtil::GetIsXP())
 	if (get_windows_major_version() < 6)
@@ -331,7 +334,7 @@ void CPositionDlg::OnBnClickedBtnSave()
 	//CMessageDlg dlgMessage;
 	//dlgMessage.SetMessage(_S(IDS_SAVE_POS));
 	//dlgMessage.DoModal();
-	m_msgbox.DoModal(_S(IDS_SAVE_POS));
+	theApp.m_msgbox.DoModal(_S(IDS_SAVE_POS));
 }
 
 

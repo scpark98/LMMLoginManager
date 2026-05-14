@@ -2,7 +2,6 @@
 #include "afxwin.h"
 
 #include "Common/ini/EZIni/EZIni.h"
-#include "Common/messagebox/CSCMessageBox/SCMessageBox.h"
 
 // CPositionDlg 대화 상자입니다.
 
@@ -11,7 +10,6 @@ class CPositionDlg : public CDialogEx
 	DECLARE_DYNAMIC(CPositionDlg)
 
 	EZIni				m_ini;
-	CSCMessageBox		m_msgbox;
 
 public:
 	CPositionDlg(CWnd* pParent = NULL);   // 표준 생성자입니다.
