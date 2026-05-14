@@ -229,7 +229,7 @@ void CLMMLoginManagerDlg::init_controls()
 void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 {
 	//서버 연결 체크 — 네트워크 호출은 워커에서, UI 작업만 invoke_ui 로 마샬링.
-	if (!is_server_reachable(theApp.m_server_ip, theApp.m_server_port))
+	if (!is_server_reachable(theApp.m_ip, theApp.m_port))
 	{
 		invoke_ui([this]
 		{
@@ -630,7 +630,7 @@ bool CLMMLoginManagerDlg::get_current_version()
 
 bool CLMMLoginManagerDlg::get_latest_version()
 {
-	CRequestUrlParams param(theApp.m_server_ip, theApp.m_server_port, _T("/download/agent/program_kr/version.html"));
+	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/download/agent/program_kr/version.html"));
 	request_url(&param);
 
 	if (param.status != HTTP_STATUS_OK)
@@ -724,7 +724,7 @@ int CLMMLoginManagerDlg::get_device_onoff_status()
 	CString device_id = theApp.m_ini["SERVER"]["DID"];
 	CString header = _T("token: ") + agent_token + _T("\r\n");
 
-	CRequestUrlParams param(theApp.m_server_ip, theApp.m_server_port, _T("/agent/api/v1.0/GetLmmDeviceOnOff"), _T("POST"));
+	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/GetLmmDeviceOnOff"), _T("POST"));
 	param.body.Format(_T("{\"device_id\":\"%s\"}"), device_id);
 	param.headers.push_back(header);
 
@@ -784,7 +784,7 @@ void CLMMLoginManagerDlg::request_put_device_env_info()
 	CString browser_version;
 	CString default_browser = get_default_browser_info(&browser_path, &browser_version);
 
-	CRequestUrlParams params(theApp.m_server_ip, theApp.m_server_port, _T("/lmm/api/v1.0/device_env_info"), _T("POST"));
+	CRequestUrlParams params(theApp.m_ip, theApp.m_port, _T("/lmm/api/v1.0/device_env_info"), _T("POST"));
 	params.use_thread = true;
 	params.body.Format(_T("{\"method\": \"PUT\", \"request_type\": \"agent\", \"login_id\": \"%s\", \"device_id\": \"%s\", \"os_type\": 1, \"os_str\": \"%s\", \"default_browser\": \"%s\", \"default_browser_version\": \"%s\"}"),
 		CString(theApp.m_ini["LOGIN"]["ID"]),// Config::LoadConfigString(_T("LOGIN"), _T("ID"), _T("")),

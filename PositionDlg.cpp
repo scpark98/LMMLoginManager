@@ -101,13 +101,18 @@ BOOL CPositionDlg::OnInitDialog()
 	//m_btnUse.SetSolidButton(Color(82, 87, 92), Color(82, 87, 92), Color(82, 87, 92), Color(82, 87, 92), 32, 20);
 	//m_btnUse.SetButtonIcon(IDP_OFF, IDP_OFF, IDP_ON, IDP_OFF, 0, 0, 32, 20);
 
-	m_btnSave.add_image(IDB_SAVE);
+	//이 대화창은 컬러키를 yellow로 지정해서 투명하게 보이는 대화창이므로
+	//저장 버튼 이미지의 투명 영역을 alpha값 그대로 사용하면 흰색으로 표시되는 부작용이 있다.
+	//따라서 이미지 또한 투명 영역을 yellow로 하고 다음과 같이 설정하니 버튼도 이미지만 정확히 표현된다.
+	m_btnSave.add_image(IDB_SAVE, IDB_SAVE, IDB_SAVE, IDB_SAVE_DISABLED);
+	m_btnSave.fit_to_image(true);
+	m_btnSave.set_parent_back_color(Gdiplus::Color(255, 255, 0));
 	m_btnSave.set_transparent();
+	m_btnSave.set_down_offset(1, 1);
 	//m_btnSave.set_back_color(Gdiplus::Color(82, 87, 92));
 	//m_btnSave.SetSolidButton(Color(242, 242, 242), Color(202, 202, 202), Color(142, 142, 142), Color(100, 100, 100), 48, 48);
 	//m_btnSave.SetButtonIcon(IDP_SAVE, IDP_SAVE, IDP_SAVE, IDP_SAVE, 12, 12, 24, 24);
 	//m_btnSave.SetBorder(TRUE, Color(105, 105, 105));
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
 }
@@ -194,18 +199,18 @@ void CPositionDlg::OnPaint()
 
 		// 더블버퍼링
 		Gdiplus::Bitmap bitmap(rect.Width(), rect.Height());
-		Gdiplus::Graphics mDC(&bitmap);
+		Gdiplus::Graphics g(&bitmap);
 
 		Gdiplus::SolidBrush outBR(Gdiplus::Color(43, 43, 43));
-		mDC.FillRectangle(&outBR, 0, 0, rect.Width(), rect.Height());
+		g.FillRectangle(&outBR, 0, 0, rect.Width(), rect.Height());
 
 
 		Gdiplus::SolidBrush bgBR(Gdiplus::Color(82, 87, 92));
-		mDC.FillRectangle(&bgBR, 1, 1, rect.Width() - 2, rect.Height() - 2);
+		g.FillRectangle(&bgBR, 1, 1, rect.Width() - 2, rect.Height() - 2);
 
 		Gdiplus::SolidBrush trBR(Gdiplus::Color(255, 255, 0));
-		mDC.FillRectangle(&outBR, 1, 31, rect.Width() - 2, 1);
-		mDC.FillRectangle(&trBR, 2, 32, rect.Width() - 4, rect.Height() - 34);
+		g.FillRectangle(&outBR, 1, 31, rect.Width() - 2, 1);
+		g.FillRectangle(&trBR, 2, 32, rect.Width() - 4, rect.Height() - 34);
 
 		CString strFont = _S(IDS_FONT);
 		Gdiplus::Font titleFont(strFont, 12, Gdiplus::FontStyleBold, Gdiplus::UnitPixel);
@@ -217,15 +222,12 @@ void CPositionDlg::OnPaint()
 		CString strDraw = _S(IDS_TITLE) + _T(" Position");
 
 		Gdiplus::RectF boundRect;
-		mDC.MeasureString(strDraw, -1, &titleFont, Gdiplus::PointF(7, 1), &boundRect);
+		g.MeasureString(strDraw, -1, &titleFont, Gdiplus::PointF(7, 1), &boundRect);
 		boundRect.Height = 30;
-		mDC.DrawString(strDraw, -1, &titleFont, boundRect, &textSF, &textBR);
+		g.DrawString(strDraw, -1, &titleFont, boundRect, &textSF, &textBR);
 
 		graphics.DrawImage(&bitmap, 0, 0);
 
-		m_btnClose.MoveWindow(rect.Width() - 26, 6, 20, 20);
-		m_btnUse.MoveWindow(rect.Width() - 26 - 37, 6, 32, 20);
-		m_btnSave.MoveWindow((rect.Width() / 2) - 24, (rect.Height() / 2) - 24, 48, 48);
 	}
 }
 
@@ -342,5 +344,19 @@ void CPositionDlg::OnBnClickedBtnClose()
 void CPositionDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
+
+	if (m_btnClose.m_hWnd == nullptr)
+		return;
+
+	CRect rect;
+
+	GetClientRect(rect);
+
+	m_btnClose.MoveWindow(rect.Width() - 26, 6, 20, 20);
+	m_btnUse.MoveWindow(rect.Width() - 26 - 37, 6, 32, 20);
+
+	rect.top += 30;
+	m_btnSave.MoveWindow((rect.Width() - m_btnSave.width()) / 2, rect.top + ((rect.Height() - m_btnSave.height()) / 2), m_btnSave.width(), m_btnSave.height());
+
 	Invalidate(FALSE);
 }

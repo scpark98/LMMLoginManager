@@ -72,7 +72,6 @@
 #define IDS_REGION_JA                   150
 #define IDB_ON                          150
 #define IDS_CLOSE_AFTER_SECONDS         151
-#define IDB_SAVE                        151
 #define IDS_ID_SYNC_NOTIFICATION        152
 #define IDB_TABLET                      152
 #define IDS_AGENT_RESTART_AFTER_UPDATE  153
@@ -81,6 +80,9 @@
 #define IDB_COMPUTER                    154
 #define IDB_PNG1                        155
 #define IDB_FOLDER                      155
+#define IDB_SAVE                        158
+#define IDB_PNG2                        159
+#define IDB_SAVE_DISABLED               159
 #define IDS_BTN_LOGIN_P2P               207
 #define IDS_LOGIN                       208
 #define IDC_BUTTON_CONFIG               1000
@@ -122,7 +124,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        156
+#define _APS_NEXT_RESOURCE_VALUE        160
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101

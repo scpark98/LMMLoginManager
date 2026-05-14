@@ -111,8 +111,9 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	m_product_name = get_file_property(_T(""), _T("ProductName"));
 	m_config_path.Format(_T("%s\\config.ini"), get_exe_directory());
 	m_ini.SetFileName(m_config_path);
-	m_server_ip = m_ini["SERVER"]["LIP"];
-	m_server_port = m_ini["SERVER"]["LPORT"];
+	m_ip = m_ini["SERVER"]["LIP"];
+	m_port = m_ini["SERVER"]["LPORT"];
+	m_company_key = m_ini["SERVER"]["COMPANY_KEY"];
 
 	ServiceSetting::LoadServiceSetting();
 	BOOL bDeleteDevice = FALSE;
@@ -121,10 +122,18 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
 
 	m_msgbox.create(nullptr, _S(IDS_TITLE));
-	m_msgbox.set_color_theme(m_theme);// CSCColorTheme::color_theme_dark_gray);
+	m_msgbox.set_color_theme(CSCColorTheme::color_theme_dark_gray);
+
+	//for test
+	//m_msgbox.DoModal(_T("서버 접속 실패 (<cr=crimson>error = -1)</cr>\n서버에 접근할 수 없습니다.</cr>\n\n<b>방화벽</b> 또는 <b>외부 네트워크 접근</b>이 가능한 환경인지\n먼저 확인하시기 바랍니다."), MB_ICONSTOP);
 
 	if (__argc >= 2)
 	{
+		for (int i = 0; i < __argc; i++)
+		{
+			logWrite(_T("__targv[%d] = %s"), i, __targv[i]);
+		}
+
 		m_cmd = __targv[1];
 		m_cmd.Trim();
 
@@ -153,7 +162,6 @@ BOOL CLMMLoginManagerApp::InitInstance()
 		else if (m_cmd == _T("-group")) // 그룹 변경
 		{
 			CDeviceGroupDlg dlgGroup;
-			dlgGroup.set_company_key(m_ini["SERVER"]["COMPANY_KEY"]);// Config::LoadCompanyFK());
 			dlgGroup.DoModal();
 		}
 		else if (m_cmd == _T("-messagebox")) // 메시지박스 표시
@@ -179,9 +187,8 @@ BOOL CLMMLoginManagerApp::InitInstance()
 		else if (m_cmd == _T("-exit")) // 종료
 		{
 			CString strMessage = _S(IDS_EXIT_AGENT);
-			CSCMessageBox dlg;
 
-			if (dlg.DoModal(strMessage, MB_OKCANCEL) == IDOK)
+			if (m_msgbox.DoModal(strMessage, MB_OKCANCEL) == IDOK)
 			{
 				int nAutoLogin = m_ini["LOGIN"]["AUTO_LOGIN"];// Config::LoadIsAutoLogin();
 
@@ -193,14 +200,12 @@ BOOL CLMMLoginManagerApp::InitInstance()
 
 				if (nAutoLogin == 0)
 				{
-					//theApp.m_agent_control.RemoveAgent();
-					status = service_command(m_service_name, _T("-delete"), error_code, &detail);
+					status = service_command(m_service_name, _T("delete"), error_code, &detail);
 					logWrite(_T("service cmd delete. status = %d, error_code = %d, detail = %s"), status, error_code, detail);
 				}
 				else
 				{
-					//theApp.m_agent_control.StopAgent(true);
-					status = service_command(m_service_name, _T("-stop"), error_code, &detail);
+					status = service_command(m_service_name, _T("stop"), error_code, &detail);
 					logWrite(_T("service cmd stop. status = %d, error_code = %d, detail = %s"), status, error_code, detail);
 				}
 
@@ -255,7 +260,7 @@ BOOL CLMMLoginManagerApp::InitInstance()
 				if (__argc >= 3)
 				{
 					param = __targv[2];
-					logWrite(_T("param = %s"), param);
+					logWrite(_T("param : %s"), param);
 				}
 				ShellExecute(NULL, _T("open"), m_cmd, param, 0, SW_SHOWNORMAL);
 			}
@@ -268,7 +273,7 @@ BOOL CLMMLoginManagerApp::InitInstance()
 			//CDeviceDeleteDlg dlg;
 			//if (dlg.DoModal() == IDOK)
 			{
-				CRequestUrlParams param(m_server_ip, m_server_port, _T("/api/v1.0/linkmemine/DeleteLmmDeviceInfo"), _T("POST"));
+				CRequestUrlParams param(m_ip, m_port, _T("/api/v1.0/linkmemine/DeleteLmmDeviceInfo"), _T("POST"));
 
 				CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
 				CString device_id = theApp.m_ini["SERVER"]["DID"];
@@ -425,4 +430,10 @@ void CLMMLoginManagerApp::terminate_other_processes()
 	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDServer.exe"));
 	kill_process_by_fullpath(get_exe_directory() + _T("\\hwmon.exe"));
 	*/
+}
+
+void CLMMLoginManagerApp::set_company_key(int company_key)
+{
+	m_company_key = company_key;
+	m_ini["SERVER"]["COMPANY_KEY"] = m_company_key;
 }

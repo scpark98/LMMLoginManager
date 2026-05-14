@@ -16,7 +16,6 @@ public:
 	virtual ~CDeviceGroupDlg();
 
 	CSCColorTheme		m_theme;
-	void				set_company_key(CString company_key) { m_company_key = company_key; }
 
 	bool				m_build_tree_completed = false;
 	void				get_group_list();
@@ -34,7 +33,6 @@ protected:
 		timer_get_group_list = 1,
 	};
 
-	CString					m_company_key;
 	std::vector<GroupInfo*> m_groups;
 
 

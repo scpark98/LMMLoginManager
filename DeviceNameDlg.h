@@ -9,7 +9,13 @@ class CDeviceNameDlg : public CDialogEx
 {
 	DECLARE_DYNAMIC(CDeviceNameDlg)
 
-	CSCColorTheme		m_theme;
+	CSCColorTheme		m_theme = CSCColorTheme(this);
+	CString				m_cur_dev_name;
+
+	//장치명이 중복인지 요청하고 요청 실패 또는 중복이라면 true를 리턴한다.
+	//중복이 아니라면 false를 리턴한다.
+	bool				is_dev_name_duplicated(CString new_dev_name);
+	bool				set_dev_name(CString new_dev_name);
 
 public:
 	CDeviceNameDlg(CWnd* pParent = nullptr);   // 표준 생성자입니다.

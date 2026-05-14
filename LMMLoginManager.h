@@ -12,6 +12,7 @@
 
 #include "Common/ini/EZIni/EZIni.h"
 #include "Common/log/SCLog/SCLog.h"
+#include "Common/json/rapid_json/json.h"
 #include "Common/messagebox/CSCMessageBox/SCMessageBox.h"
 
 // CLMMLoginManagerApp:
@@ -46,13 +47,22 @@ public:
 
 	CString				m_product_name;
 
+	int					get_company_key() { return m_company_key; }
+	void				set_company_key(int company_key);
+
 	//config.ini 파일을 읽고 쓰지만 쓸 때 맨 마지막 위치에 기록되는 아쉬운 점이 있어서 읽는 용도로만 우선 사용한다.
 	EZIni				m_ini;
-	CString				m_server_ip;
-	int					m_server_port;
+	CString				m_ip;
+	int					m_port;
 	CString				m_config_path;
 
 	CSCColorTheme		m_theme;
+
+protected:
+	//company key는 설치 후 최초 로그인 성공 시 LMMAgent에 의해 config.ini에 기록된다.
+	//장치명 변경 시 GetUserInfo()에서 다시 조회하고 갱신한다.
+	//따라서 공통이므로 한번 세팅되면 어디에서도 다시 설정할 필요가 없다.
+	int					m_company_key;
 
 // 재정의입니다.
 public:

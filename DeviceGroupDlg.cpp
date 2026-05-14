@@ -130,17 +130,17 @@ void CDeviceGroupDlg::OnBnClickedOk()
 
 	CString header = _T("token: ") + theApp.m_ini["LOGIN"]["TOKEN"].to_CString() + _T("\r\n");
 
-	CRequestUrlParams param(theApp.m_server_ip, theApp.m_server_port, _T("/agent/api/v1.0/UpdateLmmDeviceGroup"), _T("POST"));
+	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/UpdateLmmDeviceGroup"), _T("POST"));
 
 	param.body.Format(_T("{\"device_id\":\"%s\", \"group_fk\":%s}"), theApp.m_ini["SERVER"]["DID"].to_CString(), data->GetGroupNum());
 	param.headers.push_back(header);
 
-	logWrite(_T("param = %s"), param.get_param_str());
+	logWrite(_T("param : %s"), param.get_param_str());
 	request_url(&param);
 
 	logWrite(_T("status = %d, result = %s"), param.status, param.result);
 
-	if (true)//param.status != HTTP_STATUS_OK)
+	if (param.status != HTTP_STATUS_OK)
 	{
 		logWriteE(_T("fail UpdateLmmDeviceGroup."));
 		theApp.m_msgbox.DoModal(_S(IDS_FAIL_SET_GROUP) + _T("\n<cr=red>abc<sz=26>def</cr></sz>\n마지막 <b><cr=royalblue><sz=16>라인"), MB_OK | MB_ICONEXCLAMATION);
@@ -152,6 +152,7 @@ void CDeviceGroupDlg::OnBnClickedOk()
 		Json json;
 		if (!json.parse(param.result))
 		{
+			logWriteE(_T("json.parse"));
 			theApp.m_msgbox.DoModal(_T("읽어온 그룹정보에 오류가 있습니다."));
 			return;
 		}
@@ -204,16 +205,15 @@ void CDeviceGroupDlg::OnTimer(UINT_PTR nIDEvent)
 void CDeviceGroupDlg::get_group_list()
 {
 	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
-	CString company_fk = theApp.m_ini["SERVER"]["COMPANY_KEY"];
 	CString mgr_id = theApp.m_ini["LOGIN"]["ID"];
 	CString header = _T("token: ") + agent_token + _T("\r\n");
 
-	CRequestUrlParams param(theApp.m_server_ip, theApp.m_server_port, _T("/agent/api/v1.0/GetLmmGroupList"), _T("POST"));
+	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/GetLmmGroupList"), _T("POST"));
 
-	param.body.Format(_T("{\"company_fk\":%s, \"mgrid\":\"%s\"}"), company_fk, mgr_id);
+	param.body.Format(_T("{\"company_fk\":%d, \"mgrid\":\"%s\"}"), theApp.get_company_key(), mgr_id);
 	param.headers.push_back(header);
 
-	logWrite(_T("param = %s"), param.get_param_str());
+	logWrite(_T("param : %s"), param.get_param_str());
 	request_url(&param);
 
 	logWrite(_T("status = %d, result = %s"), param.status, param.result);
