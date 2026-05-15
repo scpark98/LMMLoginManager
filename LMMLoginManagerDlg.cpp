@@ -197,22 +197,24 @@ void CLMMLoginManagerDlg::init_controls()
 	m_button_close.set_parent_back_color(m_theme.cr_back);
 
 	m_edit_id.set_color_theme(m_theme);
-	m_edit_id.set_dim_text(_T("아이디를 입력하세요"));
+	m_edit_id.set_dim_text(_S(IDS_INPUT_ID));
 	m_edit_id.set_prefix_image(IDB_USER);
 	m_edit_id.set_round(6);
 
 	m_edit_pw.set_color_theme(m_theme);
-	m_edit_pw.set_dim_text(_T("비밀번호를 입력하세요"));
+	m_edit_pw.set_dim_text(_S(IDS_INPUT_PASSWORD));
 	m_edit_pw.set_prefix_image(IDB_PASSWORD);
 	m_edit_pw.set_round(6);
 	m_edit_pw.set_password_mode();
 	m_edit_pw.set_action_button(CSCStaticEdit::action_password_toggle);
 
+	m_check_save_pw.set_text(_S(IDS_BTN_SAVE_PASSWORD));
 	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_save_pw.set_text_color(m_theme.cr_text, false);
 	m_check_save_pw.set_back_color(m_theme.cr_back, false);
 	m_check_save_pw.SetCheck(theApp.m_ini["LOGIN"]["SAVE_PASSWORD"]);
 
+	m_check_auto_login.set_text(_S(IDS_BTN_AUTO_LOGIN));
 	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
 	m_check_auto_login.set_text_color(m_theme.cr_text, false);
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
