@@ -4,6 +4,8 @@
     <BuildType Name="Debug_Lmm10" />
     <BuildType Name="Debug_Lmm30" />
     <BuildType Name="Release" />
+    <BuildType Name="Release_Lmm10" />
+    <BuildType Name="Release_Lmm30" />
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>

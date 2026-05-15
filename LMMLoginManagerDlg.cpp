@@ -13,6 +13,7 @@
 #include "Common/Functions.h"
 #include "Common/MemoryDC.h"
 #include "Common/Json/rapid_json/json.h"
+#include "Common/win_compat/dwm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -94,6 +95,8 @@ BEGIN_MESSAGE_MAP(CLMMLoginManagerDlg, CDialogEx)
 	ON_WM_WINDOWPOSCHANGED()
 	ON_WM_TIMER()
 	ON_MESSAGE(WM_APP_UI_INVOKE, &CLMMLoginManagerDlg::on_ui_invoke)
+	ON_BN_CLICKED(IDC_BUTTON_RESTART, &CLMMLoginManagerDlg::OnBnClickedButtonRestart)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -129,6 +132,13 @@ BOOL CLMMLoginManagerDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	
+	//자동 설치 패키지 여부 설정값 로딩
+	DWORD is_auto_setup = 0;
+	get_registry_int(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("is auto setup"), &is_auto_setup);
+	theApp.m_auto_setup = is_auto_setup;
+	logWrite(_T("is_auto_setup = %d"), is_auto_setup);
+
 	init_dialog();
 	init_controls();
 	m_udpSocket.Create();
@@ -159,11 +169,8 @@ void CLMMLoginManagerDlg::init_dialog()
 		SWP_NOACTIVATE | SWP_FRAMECHANGED);
 
 	//캡션바를 제거해도 직사각이 아닌 윈11처럼 라운드 모양으로.
-	//XP에서는 지원되지 않을것이다.
-#ifndef _USING_V110_SDK71_
-	DWORD corner = DWMWCP_ROUND;
-	DwmSetWindowAttribute(m_hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner, sizeof(corner));
-#endif
+	//XP/Win10 이하는 헬퍼 안에서 자동 no-op.
+	win_compat::dwm::set_window_corner_round(m_hWnd);
 }
 
 void CLMMLoginManagerDlg::init_controls()
@@ -226,6 +233,115 @@ void CLMMLoginManagerDlg::init_controls()
 	m_static_version.set_blink(true, 600, 400);
 }
 
+bool CLMMLoginManagerDlg::get_server()
+{
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
+	CString header = _T("token: ") + agent_token + _T("\r\n");
+
+	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/server"));
+	param.headers.push_back(header);
+
+	logWrite(_T("param : %s"), param.get_param_str());
+	request_url(&param);
+	logWrite(_T("status = %d, result = %s"), param.status, param.result);
+
+	if (param.status != HTTP_STATUS_OK)
+	{
+		return false;
+	}
+	else
+	{
+		Json json;
+
+		if (!json.parse(param.result))
+		{
+			logWriteE(_T("json parsing error."));
+			return false;
+		}
+
+		logWrite(_T("result = \n%s"), json.get_json_str());
+
+		rapidjson::Value& objs = json.doc["objects"];
+
+		if (objs.Size() > 0)
+		{
+			if (!objs[0].HasMember("filetransfer_speed"))
+			{
+				//Config::SaveFileTransferSpeed(_T("0"));
+				theApp.m_ini["FILE"]["SPEED"] = 0;
+			}
+			else
+			{
+				if (!objs[0]["filetransfer_speed"].IsNull())
+				{
+					//Config::SaveFileTransferSpeed(CString(std::to_string(objs[0]["filetransfer_speed"].GetInt()).c_str()));
+					theApp.m_ini["FILE"]["SPEED"] = objs[0]["filetransfer_speed"].GetInt();
+				}
+				else
+				{
+					//Config::SaveFileTransferSpeed(_T("0"));
+					theApp.m_ini["FILE"]["SPEED"] = 0;
+				}
+			}
+
+			if (objs[0].HasMember("winapi_addr") && !objs[0]["winapi_addr"].IsNull() &&
+				objs[0].HasMember("winapi_port") && !objs[0]["winapi_port"].IsNull() &&
+				objs[0].HasMember("kms_addr") && !objs[0]["kms_addr"].IsNull() &&
+				objs[0].HasMember("kms_port") && !objs[0]["kms_port"].IsNull() &&
+				objs[0].HasMember("ap2p_addr") && !objs[0]["ap2p_addr"].IsNull() &&
+				objs[0].HasMember("ap2p_port") && !objs[0]["ap2p_port"].IsNull())
+			{
+				theApp.m_ini["SERVER"]["WIP"]	= objs[0]["winapi_addr"].GetCString();
+				theApp.m_ini["SERVER"]["WPORT"] = objs[0]["winapi_port"].GetInt();
+
+				theApp.m_ini["SERVER"]["KIP"]	= objs[0]["kms_addr"].GetCString();
+				theApp.m_ini["SERVER"]["KPORT"] = objs[0]["kms_port"].GetInt();
+
+				theApp.m_ini["SERVER"]["RIP"]	= objs[0]["ap2p_addr"].GetCString();
+				theApp.m_ini["SERVER"]["RPORT"] = objs[0]["ap2p_port"].GetInt();
+
+				//Config::SaveNetAPIIP(objs[0]["winapi_addr"].GetCString());
+				//Config::SaveNetAPIPort(CString(std::to_string(objs[0]["winapi_port"].GetInt()).c_str()));
+				//Config::SaveKMSIP(objs[0]["kms_addr"].GetCString());
+				//Config::SaveKMSPort(CString(std::to_string(objs[0]["kms_port"].GetInt()).c_str()));
+				//Config::SaveAP2PIP(objs[0]["ap2p_addr"].GetCString());
+				//Config::SaveAP2PPort(CString(std::to_string(objs[0]["ap2p_port"].GetInt()).c_str()));
+
+				if (!objs[0].HasMember("thumb_port") || objs[0]["thumb_port"].GetInt() <= 0)
+				{
+					//Config::SaveThumbnailIP(objs[0]["winapi_addr"].GetCString());
+					theApp.m_ini["SERVER"]["TIP"]	= objs[0]["winapi_addr"].GetCString();
+					theApp.m_ini["SERVER"]["TPORT"] = objs[0]["winapi_port"].GetInt();
+
+					if (objs[0]["winapi_port"].GetInt() >= 7000)
+					{
+						// 개발
+						//Config::SaveThumbnailPort(_T("7003"));
+						theApp.m_ini["SERVER"]["TPORT"] = 7003;
+					}
+					else {
+						// 운영
+						//Config::SaveThumbnailPort(_T("443"));
+						theApp.m_ini["SERVER"]["TPORT"] = 443;
+					}
+
+				}
+				else
+				{
+					//Config::SaveThumbnailIP(objs[0]["winapi_addr"].GetCString());
+					//Config::SaveThumbnailPort(CUtil::intToString(objs[0]["thumb_port"].GetInt()));
+					theApp.m_ini["SERVER"]["TIP"] = objs[0]["winapi_addr"].GetCString();
+					theApp.m_ini["SERVER"]["TPORT"] = objs[0]["thumb_port"].GetInt();
+				}
+			}
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 {
 	//서버 연결 체크 — 네트워크 호출은 워커에서, UI 작업만 invoke_ui 로 마샬링.
@@ -236,16 +352,25 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 			m_button_login.set_text(_T("서버 연결 실패"));
 			m_static_version.set_blink(false);
 			m_static_version.set_text(_T("서버 연결 실패"), Gdiplus::Color::Crimson);
-			theApp.m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 확인하세요."));
+			theApp.m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 확인하세요.\n또는 서버가 구동중일 수 있으니 잠시 후 다시 시도해주시기 바랍니다."));
 			OnBnClickedCancel();
 		});
 		return;
 	}
 
+
+
 	if (th.stop_requested())
 		return;
 
 	m_button_login.set_text(_T("버전 확인중..."));
+	Wait(10);
+
+	//우선 SERVER -> GET_SERVER 설정에 따른 동작 처리
+	if (theApp.m_ini["SERVER"]["GET_SERVER"].to_int() != 0)
+	{
+		get_server();
+	}
 
 	if (!get_current_version())
 	{
@@ -424,7 +549,10 @@ void CLMMLoginManagerDlg::OnPaint()
 			Gdiplus::Color::Transparent,
 			Gdiplus::Color::Transparent,
 			DT_RIGHT | DT_VCENTER);
-		//draw_rect(g, r, Gdiplus::Color::Red);
+		
+#ifdef _USING_V110_SDK71_
+		draw_rect(g, rc, Gdiplus::Color::DimGray);
+#endif
 	}
 }
 
@@ -455,7 +583,8 @@ void CLMMLoginManagerDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CLMMLoginManagerDlg::OnBnClickedButtonConfig()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
+	ShellExecute(NULL, _T("open"), agent_path, _T("-configservice"), NULL, SW_SHOW);
 }
 
 void CLMMLoginManagerDlg::OnBnClickedButtonMinimize()
@@ -489,9 +618,13 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 			Wait(10);
 			service_start();
 		}
-		else
+		else if (m_edit_id.get_text().GetLength() == 0)
 		{
-			theApp.m_msgbox.DoModal(_T("ID 또는 패스워드가 입력되지 않았습니다."));
+			theApp.m_msgbox.DoModal(_S(IDS_INPUT_ID));
+		}
+		else if (m_edit_pw.get_text().GetLength() == 0)
+		{
+			theApp.m_msgbox.DoModal(_S(IDS_INPUT_PASSWORD));
 		}
 	}
 	else if (m_login_state == LOGIN_OK)
@@ -689,6 +822,7 @@ void CLMMLoginManagerDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == timer_check_version)
 	{
 		KillTimer(timer_check_version);
+
 		m_thread.start([this](CSCThread& th) { thread_get_version_and_login(th); });
 	}
 
@@ -721,8 +855,8 @@ int CLMMLoginManagerDlg::get_device_onoff_status()
 	logWrite(_T("%s"), __function__);
 
 	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
-	CString device_id = theApp.m_ini["SERVER"]["DID"];
 	CString header = _T("token: ") + agent_token + _T("\r\n");
+	CString device_id = theApp.m_ini["SERVER"]["DID"];
 
 	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/GetLmmDeviceOnOff"), _T("POST"));
 	param.body.Format(_T("{\"device_id\":\"%s\"}"), device_id);
@@ -801,13 +935,33 @@ void CLMMLoginManagerDlg::request_put_device_env_info()
 	if (params.status == HTTP_STATUS_OK)
 	{
 		logWrite(_T("request success."));
-		return;
 	}
 	else
 	{
 		logWriteE(_T("request fail."));
-		return;
 	}
 
 	OnBnClickedCancel();
+}
+
+void CLMMLoginManagerDlg::OnBnClickedButtonRestart()
+{
+	logWrite(_T("%s"), __function__);
+	CString patcher_path = get_exe_directory() + _T("\\AutoPatcher.exe");
+	ShellExecute(NULL, _T("open"), patcher_path, _S(IDS_AGENT_CMD_RESTART), NULL, SW_SHOW);
+}
+
+void CLMMLoginManagerDlg::OnDestroy()
+{
+	// 로그인 안된 상태에서 종료될 경우, 모두 강제 종료한다. - pjh
+	if (m_login_state == LOGIN_BEFORE)
+	{
+		CString exe_path = get_exe_directory() + _T("\\LMMAgent.exe");
+		while (get_process_running_count(exe_path) > 0)
+			kill_process_by_fullpath(exe_path);
+
+		theApp.terminate_other_processes();
+	}
+
+	CDialogEx::OnDestroy();
 }

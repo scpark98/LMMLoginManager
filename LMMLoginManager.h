@@ -23,7 +23,6 @@ class CLMMLoginManagerApp : public CWinApp
 {
 public:
 	CLMMLoginManagerApp();
-	bool				is_duplicate_running();
 
 	CString				m_cmd;
 
@@ -63,6 +62,9 @@ protected:
 	//장치명 변경 시 GetUserInfo()에서 다시 조회하고 갱신한다.
 	//따라서 공통이므로 한번 세팅되면 어디에서도 다시 설정할 필요가 없다.
 	int					m_company_key;
+
+	bool				is_duplicate_running();
+	void				CheckRegistrySetTLS();
 
 // 재정의입니다.
 public:

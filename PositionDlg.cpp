@@ -9,6 +9,7 @@
 #include "afxdialogex.h"
 
 #include "Common/MemoryDC.h"
+#include "Common/win_compat/dwm.h"
 
 // CPositionDlg 대화 상자입니다.
 
@@ -277,13 +278,6 @@ void CPositionDlg::OnBnClickedCheckUse()
 }
 
 
-typedef HRESULT(WINAPI* DwmIsCompositionEnabledFunction)(__out BOOL* isEnabled);
-typedef HRESULT(WINAPI* DwmGetWindowAttributeFunction) (
-	__in  HWND hwnd,
-	__in  DWORD dwAttribute,
-	__out PVOID pvAttribute,
-	DWORD cbAttribute
-	);
 void CPositionDlg::OnBnClickedBtnSave()
 {
 	//20260514 scpark
@@ -291,36 +285,9 @@ void CPositionDlg::OnBnClickedBtnSave()
 	//그 효과가 가려진다. 약간의 인위적인 딜레이를 준다.
 	Wait(500);
 
+	//Vista+ 면 DWMWA_EXTENDED_FRAME_BOUNDS 로 보이는 frame 경계, 아니면 GetWindowRect fallback.
 	CRect rect;
-	//if (CUtil::GetIsXP())
-	if (get_windows_major_version() < 6)
-	{
-		GetWindowRect(&rect);
-	}
-	else
-	{
-		HINSTANCE dwmapiDllHandle = NULL;
-		dwmapiDllHandle = LoadLibrary(_T("dwmapi.dll"));
-		if (dwmapiDllHandle == NULL)
-		{
-			GetWindowRect(&rect);
-		}
-		else
-		{
-			DwmGetWindowAttributeFunction DwmGetWindowAttribute;
-			DwmGetWindowAttribute = (DwmGetWindowAttributeFunction) ::GetProcAddress(dwmapiDllHandle, "DwmGetWindowAttribute");
-			if (DwmGetWindowAttribute == NULL)
-			{
-				GetWindowRect(&rect);
-			}
-			else
-			{
-				DwmGetWindowAttribute(GetSafeHwnd(), DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect));
-			}
-			//DwmGetWindowAttribute(GetSafeHwnd(), DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect));
-		}
-		FreeLibrary(dwmapiDllHandle);
-	}
+	win_compat::dwm::get_extended_frame_bounds_or_window_rect(GetSafeHwnd(), rect);
 
 	//Config::SaveShareLeft(rect.left + 2);
 	//Config::SaveShareTop(rect.top + 32);

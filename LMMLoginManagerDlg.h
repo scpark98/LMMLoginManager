@@ -62,6 +62,7 @@ protected:
 
 	int					m_login_state = LOGIN_BEFORE;
 
+	bool				get_server();
 	bool				get_current_version();
 	bool				get_latest_version();
 	bool				validate_login_input();
@@ -106,4 +107,6 @@ public:
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	CSCStatic m_static_version;
+	afx_msg void OnBnClickedButtonRestart();
+	afx_msg void OnDestroy();
 };

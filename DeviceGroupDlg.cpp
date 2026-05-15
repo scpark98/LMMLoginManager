@@ -7,6 +7,7 @@
 #include "DeviceGroupDlg.h"
 
 #include "Common/MemoryDC.h"
+#include "Common/win_compat/dwm.h"
 
 
 // CDeviceGroupDlg 대화 상자
@@ -52,8 +53,7 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
-	DWORD corner = DWMWCP_ROUND;
-	DwmSetWindowAttribute(m_hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner, sizeof(corner));
+	win_compat::dwm::set_window_corner_round(m_hWnd);
 
 	m_theme.set_color_theme(CSCColorTheme::color_theme_dark_gray);
 

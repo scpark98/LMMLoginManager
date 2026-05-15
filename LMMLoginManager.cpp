@@ -115,6 +115,8 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	m_port = m_ini["SERVER"]["LPORT"];
 	m_company_key = m_ini["SERVER"]["COMPANY_KEY"];
 
+	CheckRegistrySetTLS();
+
 	ServiceSetting::LoadServiceSetting();
 	BOOL bDeleteDevice = FALSE;
 	BOOL bUIStart = TRUE;
@@ -440,4 +442,32 @@ void CLMMLoginManagerApp::set_company_key(int company_key)
 {
 	m_company_key = company_key;
 	m_ini["SERVER"]["COMPANY_KEY"] = m_company_key;
+}
+
+void CLMMLoginManagerApp::CheckRegistrySetTLS()
+{
+	DWORD dataType = REG_DWORD;
+	DWORD dataSize = 256;
+	TCHAR dataBuffer[256] = { 0, };
+
+	HKEY hKey;
+	LONG ret = RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"), 0, KEY_ALL_ACCESS, &hKey);
+	if (ret == ERROR_SUCCESS)
+	{
+		ret = RegQueryValueEx(hKey, _T("SecureProtocols"), 0, &dataType, (LPBYTE)dataBuffer, &dataSize);
+		if (ret != ERROR_SUCCESS)
+		{
+			RegCloseKey(hKey);
+			return;
+		}
+
+		LPDWORD value = reinterpret_cast<LPDWORD>(&dataBuffer);
+		if (!(*value & 128))
+		{
+			*value |= 128;
+			RegSetValueEx(hKey, _T("SecureProtocols"), NULL, REG_DWORD, (LPBYTE)value, sizeof(DWORD));
+		}
+
+		RegCloseKey(hKey);
+	}
 }
