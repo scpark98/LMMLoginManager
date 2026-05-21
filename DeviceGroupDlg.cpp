@@ -55,21 +55,27 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	win_compat::dwm::set_window_corner_round(m_hWnd);
 
-	m_theme.set_color_theme(CSCColorTheme::color_theme_dark_gray);
+	//m_theme.set_color_theme(CSCColorTheme::color_theme_dark_gray);
+	//m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
+	m_theme.copy_colors_from(theApp.m_theme);
 
+	m_static_title.set_color_theme(m_theme);
 	m_static_title.set_text_color(m_theme.cr_title_text);
 	m_static_title.set_back_color(m_theme.cr_title_back_inactive);
 	m_static_title.set_font_weight(FW_BOLD);
 	m_static_title.set_text(_T("  ") + _S(IDS_TITLE));
 
+	//m_button_close.set_color_theme(m_theme);
 	m_button_close.add_image(IDB_CLOSE);
 	m_button_close.set_back_color(m_theme.cr_title_back_inactive);
 
-	m_static_build_processing.set_text_color(Gdiplus::Color::LightGray);
+	m_static_build_processing.set_color_theme(m_theme);
+	m_static_build_processing.set_text_color(m_theme.cr_text);
 	m_static_build_processing.set_back_color(m_theme.cr_back);
 	m_static_build_processing.set_blink(true, 800, 600);
 	m_static_build_processing.set_text(_S(IDS_GROUP_LOADING_INFO));
 
+	m_button_ok.set_color_theme(m_theme);
 	m_button_ok.set_text_color(m_theme.cr_title_back_inactive);
 	m_button_ok.set_back_color(m_theme.cr_title_text);
 	m_button_ok.set_font_weight(FW_BOLD);
@@ -143,7 +149,7 @@ void CDeviceGroupDlg::OnBnClickedOk()
 	if (param.status != HTTP_STATUS_OK)
 	{
 		logWriteE(_T("fail UpdateLmmDeviceGroup."));
-		theApp.m_msgbox.DoModal(_S(IDS_FAIL_SET_GROUP) + _T("\n<cr=red>abc<sz=26>def</cr></sz>\n마지막 <b><cr=royalblue><sz=16>라인"), MB_OK | MB_ICONEXCLAMATION);
+		theApp.m_msgbox.DoModal(_S(IDS_FAIL_SET_GROUP), MB_OK | MB_ICONEXCLAMATION);
 	}
 	else
 	{

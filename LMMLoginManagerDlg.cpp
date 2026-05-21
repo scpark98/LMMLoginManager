@@ -179,8 +179,7 @@ void CLMMLoginManagerDlg::init_controls()
 
 	//m_theme.set_color_theme(CSCColorTheme::color_theme_anysupport);
 	//m_theme.set_color_theme(CSCColorTheme::color_theme_helpu);
-	m_theme.cr_back = gGRAY(248);
-	m_theme.cr_parent_back = m_theme.cr_back;
+	//origin 테마 (dark slate bg) 를 그대로 사용 — 이전 gGRAY(248) override 제거.
 
 	//cr_back 등 dialog 측에서 가한 오버라이드까지 그대로 전달하기 위해 객체 자체를 넘김.
 	theApp.m_msgbox.set_color_theme(m_theme);
@@ -188,13 +187,16 @@ void CLMMLoginManagerDlg::init_controls()
 	m_logo.load(IDB_LOGO);
 
 	m_button_config.add_image(IDB_CONFIG);
-	m_button_config.set_parent_back_color(m_theme.cr_back);
+	m_button_config.set_color_theme(m_theme);
+	//m_button_config.set_parent_back_color(m_theme.cr_back);
 
 	m_button_minimize.add_image(IDB_MINIMIZE);
-	m_button_minimize.set_parent_back_color(m_theme.cr_back);
+	m_button_minimize.set_color_theme(m_theme);
+	//m_button_minimize.set_parent_back_color(m_theme.cr_back);
 
 	m_button_close.add_image(IDB_CLOSE);
-	m_button_close.set_parent_back_color(m_theme.cr_back);
+	m_button_close.set_color_theme(m_theme);
+	//m_button_close.set_parent_back_color(m_theme.cr_back);
 
 	m_edit_id.set_color_theme(m_theme);
 	m_edit_id.set_dim_text(_S(IDS_INPUT_ID));
@@ -208,30 +210,34 @@ void CLMMLoginManagerDlg::init_controls()
 	m_edit_pw.set_password_mode();
 	m_edit_pw.set_action_button(CSCStaticEdit::action_password_toggle);
 
+	m_check_save_pw.set_color_theme(m_theme);
 	m_check_save_pw.set_text(_S(IDS_BTN_SAVE_PASSWORD));
-	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
-	m_check_save_pw.set_text_color(m_theme.cr_text, false);
+	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_button_back);
+	//m_check_save_pw.set_text_color(m_theme.cr_text, false);
 	m_check_save_pw.set_back_color(m_theme.cr_back, false);
 	m_check_save_pw.SetCheck(theApp.m_ini["LOGIN"]["SAVE_PASSWORD"]);
 
+	m_check_auto_login.set_color_theme(m_theme);
 	m_check_auto_login.set_text(_S(IDS_BTN_AUTO_LOGIN));
-	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_title_back_inactive);
-	m_check_auto_login.set_text_color(m_theme.cr_text, false);
+	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_button_back);
+	//m_check_auto_login.set_text_color(m_theme.cr_text, false);
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
 	m_check_auto_login.SetCheck(theApp.m_ini["LOGIN"]["AUTO_LOGIN"]);
 
+	m_button_login.set_color_theme(m_theme);
 	m_button_login.set_text(_T("서버 연결중..."));
-	m_button_login.set_text_color(m_theme.cr_title_text, false);
-	m_button_login.set_back_color(m_theme.cr_title_back_inactive);// , false);
-	m_button_login.set_parent_back_color(m_theme.cr_back);
-	m_button_login.set_round(6);
+	//m_button_login.set_text_color(m_theme.cr_title_text, false);
+	//m_button_login.set_back_color(m_theme.cr_back_selected);// , false);
+	//m_button_login.set_parent_back_color(m_theme.cr_back);
+	m_button_login.set_round(8);
 	m_button_login.set_font_size(14);
 	m_button_login.set_font_weight(FW_BOLD);
 	m_button_login.copy_properties(m_button_restart);
 	m_button_restart.ShowWindow(SW_HIDE);
 
-	m_static_version.set_back_color(m_theme.cr_back);
-	m_static_version.set_text_color(m_theme.cr_title_back_active);
+	m_static_version.set_color_theme(m_theme);
+	//m_static_version.set_back_color(m_theme.cr_back);
+	//m_static_version.set_text_color(m_theme.cr_title_back_active);
 	m_static_version.set_blink(true, 600, 400);
 }
 
@@ -354,7 +360,7 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 			m_button_login.set_text(_T("서버 연결 실패"));
 			m_static_version.set_blink(false);
 			m_static_version.set_text(_T("서버 연결 실패"), Gdiplus::Color::Crimson);
-			theApp.m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 확인하세요.\n또는 서버가 구동중일 수 있으니 잠시 후 다시 시도해주시기 바랍니다."));
+			theApp.m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 먼저 확인해주세요.\n\n또는 서버가 구동중일 수 있으니 잠시 후 다시 시도해주시기 바랍니다."));
 			OnBnClickedCancel();
 		});
 		return;
@@ -537,16 +543,16 @@ void CLMMLoginManagerDlg::OnPaint()
 		m_logo.draw(g, r);
 
 		r.OffsetRect(0, m_logo.height + 12);
-		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_title_back_active);
+		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
 		r = rc;
 		r.top = r.bottom - 40;
-		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), get_weak_color(m_theme.cr_back, 80));
+		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
 		r.right -= 4;
 		//r.bottom += 4;
 		draw_text(g, r, m_current_version, 7, Gdiplus::FontStyleRegular, 0, 0.0f, _T("Segoe UI"),
-			get_weak_color(m_theme.cr_back, 80),
+			get_weak_color(m_theme.cr_text, -40),
 			Gdiplus::Color::Transparent,
 			Gdiplus::Color::Transparent,
 			Gdiplus::Color::Transparent,

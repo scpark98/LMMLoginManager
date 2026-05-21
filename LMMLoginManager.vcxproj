@@ -75,9 +75,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -228,7 +228,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>C:\Program Files (x86)\LinkMeMine\Service\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot);</IncludePath>
+    <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

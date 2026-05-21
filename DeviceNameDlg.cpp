@@ -54,7 +54,8 @@ BOOL CDeviceNameDlg::OnInitDialog()
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	win_compat::dwm::set_window_corner_round(m_hWnd);
 
-	m_theme.set_color_theme(CSCColorTheme::color_theme_dark_gray);
+	//m_theme.set_color_theme(CSCColorTheme::color_theme_dark_gray);
+	m_theme.copy_colors_from(theApp.m_theme);
 
 	m_static_title.set_text_color(m_theme.cr_title_text);
 	m_static_title.set_back_color(m_theme.cr_title_back_inactive);
@@ -64,12 +65,13 @@ BOOL CDeviceNameDlg::OnInitDialog()
 	m_button_close.add_image(IDB_CLOSE);
 	m_button_close.set_back_color(m_theme.cr_title_back_inactive);
 
-
+	//m_static_message.set_color_theme(theApp.m_theme);
 	m_static_message.set_text_color(m_theme.cr_text);
 	m_static_message.set_back_color(m_theme.cr_back);
 	m_static_message.set_font_weight(FW_BOLD);
 	//m_static_message.set_font_size(12);
 
+	m_edit_name.set_color_theme(theApp.m_theme);
 	m_edit_name.set_color_theme(m_theme);
 	m_edit_name.set_text_color(Gdiplus::Color::RoyalBlue);// Gdiplus::Color::Black);
 	m_edit_name.set_back_color(Gdiplus::Color::White);
@@ -77,13 +79,16 @@ BOOL CDeviceNameDlg::OnInitDialog()
 	m_cur_dev_name = theApp.m_ini["SERVER"]["DNAME"];
 	m_edit_name.set_text(m_cur_dev_name);
 	m_edit_name.set_font_weight(FW_SEMIBOLD);
+	m_edit_name.set_round(4);
 
-	m_button_ok.set_text_color(get_weak_color(m_theme.cr_back, -128));// m_theme.cr_title_back_inactive);
-	m_button_ok.set_back_color(get_weak_color(m_theme.cr_back, 128));
+	m_button_ok.set_color_theme(theApp.m_theme);
+	//m_button_ok.set_text_color(get_weak_color(m_theme.cr_back, -128));// m_theme.cr_title_back_inactive);
+	//m_button_ok.set_back_color(get_weak_color(m_theme.cr_back, 128));
 	m_button_ok.set_font_weight(FW_SEMIBOLD);
 
-	m_button_cancel.set_text_color(m_theme.cr_title_back_inactive);
-	m_button_cancel.set_back_color(m_theme.cr_title_text);
+	m_button_cancel.set_color_theme(theApp.m_theme);
+	//m_button_cancel.set_text_color(m_theme.cr_title_back_inactive);
+	//m_button_cancel.set_back_color(m_theme.cr_title_text);
 	m_button_cancel.set_font_weight(FW_SEMIBOLD);
 
 	return TRUE;  // return TRUE unless you set the focus to a control

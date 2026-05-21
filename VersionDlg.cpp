@@ -53,7 +53,8 @@ BOOL CVersionDlg::OnInitDialog()
 	//m_theme.copy_colors_from(theApp.m_theme);
 	win_compat::dwm::set_window_corner_round(m_hWnd);
 
-	m_theme.set_color_theme(CSCColorTheme::color_theme_dark_gray);
+	//m_theme.set_color_theme(CSCColorTheme::color_theme_dark_gray);
+	m_theme.copy_colors_from(theApp.m_theme);
 
 	m_static_title.set_text_color(m_theme.cr_title_text);
 	m_static_title.set_back_color(m_theme.cr_title_back_inactive);

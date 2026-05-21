@@ -15,7 +15,7 @@ public:
 	CDeviceGroupDlg(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~CDeviceGroupDlg();
 
-	CSCColorTheme		m_theme;
+	CSCColorTheme		m_theme = CSCColorTheme(this);
 
 	bool				m_build_tree_completed = false;
 	void				get_group_list();
