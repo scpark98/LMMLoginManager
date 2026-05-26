@@ -80,6 +80,7 @@
 #define IDB_COMPUTER                    154
 #define IDB_PNG1                        155
 #define IDB_FOLDER                      155
+#define IDS_BUTTON_REFRESH              155
 #define IDB_SAVE                        158
 #define IDB_PNG2                        159
 #define IDB_SAVE_DISABLED               159
@@ -113,6 +114,7 @@
 #define IDC_EDIT_NAME                   1022
 #define IDC_TREE                        1025
 #define IDC_STATIC_BUILD_PROCESSING     1026
+#define IDC_BUTTON_REFRESH              1027
 #define IDS_AGENT_CMD_START             2001
 #define IDS_AGENT_CMD_STOP              2002
 #define IDS_AGENT_CMD_CONFIG            2003
@@ -124,9 +126,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        160
+#define _APS_NEXT_RESOURCE_VALUE        161
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1027
+#define _APS_NEXT_CONTROL_VALUE         1028
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

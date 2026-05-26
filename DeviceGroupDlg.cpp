@@ -32,6 +32,7 @@ void CDeviceGroupDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TREE, m_tree);
 	DDX_Control(pDX, IDC_STATIC_BUILD_PROCESSING, m_static_build_processing);
 	DDX_Control(pDX, IDOK, m_button_ok);
+	DDX_Control(pDX, IDC_BUTTON_REFRESH, m_button_refresh);
 }
 
 
@@ -43,6 +44,7 @@ BEGIN_MESSAGE_MAP(CDeviceGroupDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_CLOSE, &CDeviceGroupDlg::OnBnClickedButtonClose)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_BUTTON_REFRESH, &CDeviceGroupDlg::OnBnClickedButtonRefresh)
 END_MESSAGE_MAP()
 
 
@@ -65,9 +67,12 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 	m_static_title.set_font_weight(FW_BOLD);
 	m_static_title.set_text(_T("  ") + _S(IDS_TITLE));
 
-	//m_button_close.set_color_theme(m_theme);
 	m_button_close.add_image(IDB_CLOSE);
 	m_button_close.set_back_color(m_theme.cr_title_back_inactive);
+
+	m_button_refresh.set_color_theme(m_theme);
+	//m_button_refresh.set_back_color(m_theme.cr_title_back_inactive);
+	m_button_refresh.set_text(_S(IDS_BUTTON_REFRESH));
 
 	m_static_build_processing.set_color_theme(m_theme);
 	m_static_build_processing.set_text_color(m_theme.cr_text);
@@ -76,12 +81,12 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 	m_static_build_processing.set_text(_S(IDS_GROUP_LOADING_INFO));
 
 	m_button_ok.set_color_theme(m_theme);
-	m_button_ok.set_text_color(m_theme.cr_title_back_inactive);
-	m_button_ok.set_back_color(m_theme.cr_title_text);
+	//m_button_ok.set_text_color(m_theme.cr_title_back_inactive);
+	//m_button_ok.set_back_color(m_theme.cr_title_text);
 	m_button_ok.set_font_weight(FW_BOLD);
 
 	m_tree.set_color_theme(m_theme);
-	m_tree.set_draw_border(false);
+	//m_tree.set_draw_border(false);
 
 	//트리 배경을 dlg 배경과 분리해서 "패널" 느낌. cr_back(64,64,64) 보다 +12 밝게.
 	//m_tree.set_back_color(get_weak_color(m_theme.cr_back, 12));
@@ -120,7 +125,7 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 		m_tree.MoveWindow(rc);
 	}
 
-	SetTimer(timer_get_group_list, 500, NULL);
+	SetTimer(timer_get_group_list, 100, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
@@ -210,6 +215,8 @@ void CDeviceGroupDlg::OnTimer(UINT_PTR nIDEvent)
 
 void CDeviceGroupDlg::get_group_list()
 {
+	release_group_info();
+
 	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
 	CString mgr_id = theApp.m_ini["LOGIN"]["ID"];
 	CString header = _T("token: ") + agent_token + _T("\r\n");
@@ -317,9 +324,11 @@ void CDeviceGroupDlg::get_group_list()
 				int apfk = _ttoi(a->GetParentGroupFk());
 				int bpfk = _ttoi(b->GetParentGroupFk());
 				//만약 parent가 같다면 groupNum으로 정렬한다.
+				//GetGroupNum()은 CString이므로 _ttoi로 숫자 비교해야 한다.
+				//문자열 비교 시 "8148" > "11339"(사전식)가 되어 순서가 어긋난다.
 				if (apfk == bpfk)
 				{
-					return (a->GetGroupNum() < b->GetGroupNum());
+					return (_ttoi(a->GetGroupNum()) < _ttoi(b->GetGroupNum()));
 				}
 				else
 				{
@@ -389,7 +398,7 @@ void CDeviceGroupDlg::build_tree()
 	m_tree.select_item(m_groups[0]->m_hItem);
 }
 
-void CDeviceGroupDlg::OnDestroy()
+void CDeviceGroupDlg::release_group_info()
 {
 	for (int i = 0; i < m_groups.size(); i++)
 	{
@@ -398,5 +407,20 @@ void CDeviceGroupDlg::OnDestroy()
 		pGroup = nullptr;
 	}
 
+	m_groups.clear();
+
+	//트리 아이템 item-data가 방금 해제한 GroupInfo를 가리키므로 함께 비워야 refresh 시 중복/dangling을 막는다.
+	if (m_tree.GetSafeHwnd())
+		m_tree.DeleteAllItems();
+}
+
+void CDeviceGroupDlg::OnDestroy()
+{
+	release_group_info();
 	CDialogEx::OnDestroy();
+}
+
+void CDeviceGroupDlg::OnBnClickedButtonRefresh()
+{
+	SetTimer(timer_get_group_list, 100, NULL);
 }

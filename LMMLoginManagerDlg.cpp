@@ -176,6 +176,8 @@ void CLMMLoginManagerDlg::init_dialog()
 void CLMMLoginManagerDlg::init_controls()
 {
 	m_theme.copy_colors_from(theApp.m_theme);
+	//m_theme.cr_text = Gdiplus::Color::Silver;
+	//m_theme.cr_button_text = m_theme.cr_text;
 
 	//m_theme.set_color_theme(CSCColorTheme::color_theme_anysupport);
 	//m_theme.set_color_theme(CSCColorTheme::color_theme_helpu);
@@ -543,14 +545,14 @@ void CLMMLoginManagerDlg::OnPaint()
 		m_logo.draw(g, r);
 
 		r.OffsetRect(0, m_logo.height + 12);
-		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
+		draw_text(g, r, _S(IDS_TITLE), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
 		r = rc;
 		r.top = r.bottom - 40;
 		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
 		r.right -= 4;
-		//r.bottom += 4;
+		r.bottom += 4;
 		draw_text(g, r, m_current_version, 7, Gdiplus::FontStyleRegular, 0, 0.0f, _T("Segoe UI"),
 			get_weak_color(m_theme.cr_text, -40),
 			Gdiplus::Color::Transparent,

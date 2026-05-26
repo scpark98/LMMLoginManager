@@ -34,7 +34,7 @@ protected:
 	};
 
 	std::vector<GroupInfo*> m_groups;
-
+	void				release_group_info();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
@@ -55,4 +55,6 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	CGdiButton m_button_ok;
 	afx_msg void OnDestroy();
+	CGdiButton m_button_refresh;
+	afx_msg void OnBnClickedButtonRefresh();
 };

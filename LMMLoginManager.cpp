@@ -121,13 +121,15 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	BOOL bDeleteDevice = FALSE;
 	BOOL bUIStart = TRUE;
 
-	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine_origin);
+	m_theme.set_color_theme(CSCColorTheme::color_theme_obsidian);
+	//m_theme.cr_button_back = Gdiplus::Color(91, 162, 217);
 
 	m_msgbox.create(nullptr, _S(IDS_TITLE));
 	m_msgbox.set_color_theme(m_theme);// CSCColorTheme::color_theme_dark_gray);
 
 	//for test
 	//int res = m_msgbox.DoModal(_T("서버 접속 실패 (<cr=crimson>error = -1)</cr>\n서버에 접근할 수 없습니다.</cr>\n\n<b>방화벽</b> 또는 <b>외부 네트워크 접근</b>이 가능한 환경인지\n먼저 확인하시기 바랍니다."), MB_OKCANCEL | MB_ICONSTOP);
+	//int res = m_msgbox.DoModal(_T("기본 메시지박스 LinkMeMine Original Theme"));
 	//trace(res);
 
 	//res = m_msgbox.DoModal(_T("두번째 상자"), MB_OKCANCEL | MB_ICONSTOP);

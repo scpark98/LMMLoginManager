@@ -981,6 +981,7 @@
     <Image Include="res\images\minimize_gray_24px.png" />
     <Image Include="res\images\password_gray_24px.png" />
     <Image Include="res\images\quit_gray_24px.png" />
+    <Image Include="res\images\refresh.png" />
     <Image Include="res\images\save.png" />
     <Image Include="res\images\save_disabled.png" />
     <Image Include="res\images\save_off.png" />
