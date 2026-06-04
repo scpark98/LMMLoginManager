@@ -623,6 +623,8 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 	{
 		if (validate_login_input())
 		{
+			theApp.m_ini["LOGIN"]["ID"] = m_edit_id.get_text();
+			theApp.m_ini["LOGIN"]["PASS"] = Util::CryptPassword(m_edit_pw.get_text());
 			m_edit_id.EnableWindow(FALSE);
 			m_edit_pw.EnableWindow(FALSE);
 			Wait(10);
