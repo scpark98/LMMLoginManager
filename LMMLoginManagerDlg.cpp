@@ -159,6 +159,7 @@ void CLMMLoginManagerDlg::init_dialog()
 
 	//캡션 + 모든 테두리 제거
 	style &= ~(WS_CAPTION | WS_THICKFRAME | WS_BORDER | WS_DLGFRAME);
+	style |= WS_MINIMIZEBOX;
 	//style |= WS_THICKFRAME; //resize를 지원할 필요가 없을 경우는 주석처리한다.
 
 	::SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
@@ -203,12 +204,12 @@ void CLMMLoginManagerDlg::init_controls()
 	m_edit_id.set_color_theme(m_theme);
 	m_edit_id.set_dim_text(_S(IDS_INPUT_ID));
 	m_edit_id.set_prefix_image(IDB_USER);
-	m_edit_id.set_round(6);
+	m_edit_id.set_round(8);
 
 	m_edit_pw.set_color_theme(m_theme);
 	m_edit_pw.set_dim_text(_S(IDS_INPUT_PASSWORD));
 	m_edit_pw.set_prefix_image(IDB_PASSWORD);
-	m_edit_pw.set_round(6);
+	m_edit_pw.set_round(8);
 	m_edit_pw.set_password_mode();
 	m_edit_pw.set_action_button(CSCStaticEdit::action_password_toggle);
 
@@ -231,7 +232,7 @@ void CLMMLoginManagerDlg::init_controls()
 	//m_button_login.set_text_color(m_theme.cr_title_text, false);
 	//m_button_login.set_back_color(m_theme.cr_back_selected);// , false);
 	//m_button_login.set_parent_back_color(m_theme.cr_back);
-	m_button_login.set_round(8);
+	m_button_login.set_round(12);
 	m_button_login.set_font_size(14);
 	m_button_login.set_font_weight(FW_BOLD);
 	m_button_login.copy_properties(m_button_restart);
@@ -367,7 +368,6 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 		});
 		return;
 	}
-
 
 
 	if (th.stop_requested())
@@ -540,19 +540,19 @@ void CLMMLoginManagerDlg::OnPaint()
 		g.SetTextRenderingHint(Gdiplus::TextRenderingHint::TextRenderingHintAntiAliasGridFit);
 
 		CRect r = rc;
-		r.top = 40;
+		r.top = 46;
 		r.bottom = r.top + m_logo.height;
 		m_logo.draw(g, r);
 
-		r.OffsetRect(0, m_logo.height + 12);
+		r.OffsetRect(0, m_logo.height + 8);
 		draw_text(g, r, _S(IDS_TITLE), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
 		r = rc;
 		r.top = r.bottom - 40;
 		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
-		r.right -= 4;
-		r.bottom += 4;
+		r.right -= 8;
+		r.bottom += 5;
 		draw_text(g, r, m_current_version, 7, Gdiplus::FontStyleRegular, 0, 0.0f, _T("Segoe UI"),
 			get_weak_color(m_theme.cr_text, -40),
 			Gdiplus::Color::Transparent,
@@ -576,6 +576,7 @@ HCURSOR CLMMLoginManagerDlg::OnQueryDragIcon()
 
 void CLMMLoginManagerDlg::OnBnClickedOk()
 {
+	OnBnClickedButtonLogin();
 }
 
 void CLMMLoginManagerDlg::OnBnClickedCancel()
@@ -623,6 +624,7 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 	{
 		if (validate_login_input())
 		{
+			TRACE(_T("%s, %s\n"), m_edit_id.get_text(), m_edit_pw.get_text());
 			theApp.m_ini["LOGIN"]["ID"] = m_edit_id.get_text();
 			theApp.m_ini["LOGIN"]["PASS"] = Util::CryptPassword(m_edit_pw.get_text());
 			m_edit_id.EnableWindow(FALSE);
@@ -663,11 +665,14 @@ bool CLMMLoginManagerDlg::service_start()
 {
 	//서비스가 이미 실행중이거나 설치되어 있을 경우 제거 후 새로 등록하여 실행시키도록 한다.
 	service_stop(true);
+	Wait(1000);
 
 	//서비스를 등록하고
 	logWrite(_T("install service (%s)..."), theApp.m_service_name);
 	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
 	ShellExecute(NULL, _T("open"), agent_path, _T("-install"), NULL, SW_SHOW);
+
+	Wait(1000);
 
 	//서비스가 정상 등록될 때까지 기다렸다가 구동시킨다.
 	while (true)
@@ -675,6 +680,7 @@ bool CLMMLoginManagerDlg::service_start()
 		DWORD error_code = 0;
 		CString detail;
 		DWORD status_code = service_command(theApp.m_service_name, _T("query"), error_code, &detail);
+		trace(status_code);
 
 		//등록이 실패한 경우
 		if (status_code < 1)
@@ -976,4 +982,33 @@ void CLMMLoginManagerDlg::OnDestroy()
 	}
 
 	CDialogEx::OnDestroy();
+}
+
+BOOL CLMMLoginManagerDlg::PreTranslateMessage(MSG* pMsg)
+{
+	//ID/PW edit, 체크박스, 빈 영역 등 다이얼로그 어디에 포커스가 있어도 Enter 한 번으로 로그인.
+	//기본 dialog 의 IDOK default-button 라우팅에 의존하지 않고 여기서 직접 가로채는 이유:
+	//  - m_button_ok(CGdiButton) 의 default-button 처리가 표준 button 과 다를 수 있음.
+	//  - IME 합성 중 Enter(조합 확정)는 WM_IME_* 로 라우팅되어 WM_KEYDOWN 으로 안 옴 → 여기에 도달했다는 것 자체가
+	//    합성 외 Enter 라는 뜻이라 별도 m_composing 체크 불필요.
+	//로그인 진행 중에는 m_button_ok 가 disable 되므로 그 동안의 Enter spam 은 흡수만 하고 무시.
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
+	{
+		//if (m_button_ok.GetSafeHwnd() && m_button_ok.IsWindowEnabled())
+		//	OnBnClickedOk();
+		//return TRUE;
+	}
+	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+void CLMMLoginManagerDlg::change_theme(bool next_theme)
+{
+	int cur_theme = theApp.m_theme.get_color_theme() + (next_theme ? 1 : -1);
+	std::deque<CString> theme_list;
+	theApp.m_theme.get_color_theme_list(theme_list);
+	Clamp(cur_theme, 0, (int)theme_list.size() - 1);
+	trace(cur_theme);
+	theApp.m_theme.set_color_theme(cur_theme);
+	m_theme.copy_colors_from(theApp.m_theme);
+	Invalidate();
 }

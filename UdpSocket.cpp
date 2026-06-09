@@ -125,7 +125,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
-								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
 							}
 						}
 						break;
@@ -133,12 +133,11 @@ void CUdpSocket::OnReceive(int nErrorCode)
 						{
 							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
-								theApp.m_msgbox.DoModal(_T("invalid ID or password"));// _S(IDS_INVALID_IDPW));
-						
+								theApp.m_msgbox.DoModal(_S(IDS_INVALID_IDPW));
 								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
 
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
-								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
 							}
 						}
 						break;

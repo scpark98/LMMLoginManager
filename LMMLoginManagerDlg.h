@@ -27,6 +27,9 @@ public:
 
 	void				request_put_device_env_info();
 
+	//for test
+	void				change_theme(bool next_theme = true);
+
 // 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_LMMLOGINMANAGER_DIALOG };
@@ -109,4 +112,5 @@ public:
 	CSCStatic m_static_version;
 	afx_msg void OnBnClickedButtonRestart();
 	afx_msg void OnDestroy();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

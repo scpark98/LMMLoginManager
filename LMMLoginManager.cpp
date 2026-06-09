@@ -121,7 +121,7 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	BOOL bDeleteDevice = FALSE;
 	BOOL bUIStart = TRUE;
 
-	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
+	m_theme.set_color_theme(CSCColorTheme::color_theme_claude06);
 	//m_theme.cr_button_back = Gdiplus::Color(91, 162, 217);
 
 	m_msgbox.create(nullptr, _S(IDS_TITLE));
