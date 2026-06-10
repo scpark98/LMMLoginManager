@@ -160,7 +160,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 						
 								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
-								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
 							}
 						}
 						break;
@@ -174,7 +174,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
-								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
+								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
 							}
 						}
 						break;

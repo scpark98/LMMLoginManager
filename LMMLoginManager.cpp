@@ -421,23 +421,20 @@ bool CLMMLoginManagerApp::is_duplicate_running()
 
 void CLMMLoginManagerApp::terminate_other_processes()
 {
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nScreenClient.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDClient2.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nFTDServer2.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDClient.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im nSSDServer.exe"), NULL, SW_HIDE);
-	ShellExecute(NULL, _T("open"), _T("taskkill.exe"), _T("/f /im hwmon.exe"), NULL, SW_HIDE);
-
-	/*
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nScreenClient.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDClient.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nFTDServer.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDClient.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\nSSDServer.exe"));
-	kill_process_by_fullpath(get_exe_directory() + _T("\\hwmon.exe"));
-	*/
+	//taskkill /f /im name.exe 는 같은 이름의 *모든* 프로세스를 죽이므로 LMM 3.0 SE 등
+	//다른 제품의 동명 프로세스까지 종료시키는 부작용이 있다. 정확히 우리 설치 경로의
+	//exe 만 종료하도록 kill_process_by_fullpath 로 전환 (다른 경로의 동명 exe 영향 없음).
+	//taskkill 은 ShellExecute 비동기였지만 kill_process_by_fullpath 는 동기 TerminateProcess —
+	//함수 반환 시점에 종료가 보장된다.
+	CString dir = get_exe_directory();
+	kill_process_by_fullpath(dir + _T("\\nScreenClient.exe"));
+	kill_process_by_fullpath(dir + _T("\\nFTDClient.exe"));
+	kill_process_by_fullpath(dir + _T("\\nFTDServer.exe"));
+	kill_process_by_fullpath(dir + _T("\\nFTDClient2.exe"));
+	kill_process_by_fullpath(dir + _T("\\nFTDServer2.exe"));
+	kill_process_by_fullpath(dir + _T("\\nSSDClient.exe"));
+	kill_process_by_fullpath(dir + _T("\\nSSDServer.exe"));
+	kill_process_by_fullpath(dir + _T("\\hwmon.exe"));
 }
 
 void CLMMLoginManagerApp::set_company_key(int company_key)

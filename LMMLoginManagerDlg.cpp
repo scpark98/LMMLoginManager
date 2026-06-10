@@ -857,6 +857,17 @@ bool CLMMLoginManagerDlg::service_stop(bool include_delete)
 	}
 
 	logWrite(_T("service %s success."), cmd);
+
+	//SCM 의 STOP/DELETE 는 -service 인스턴스에만 시그널이 간다. 같은 LMMAgent.exe 가
+	//user 세션에 -controlservice -slave / -desktopserver 등으로 별도 실행되어 있는데,
+	//이들은 SCM 과 무관한 별도 프로세스라 살아남는 경우가 있다 → 명시적으로 정리.
+	//kill_process_by_fullpath 는 정확히 같은 fullpath 만 종료하므로 다른 제품(LMM 3.0 SE 등)의
+	//동명 프로세스에는 영향 없음.
+	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
+	int killed = kill_process_by_fullpath(agent_path);
+	if (killed > 0)
+		logWrite(_T("killed %d residual LMMAgent.exe instance(s)."), killed);
+
 	return true;
 }
 
