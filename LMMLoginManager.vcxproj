@@ -1018,6 +1018,9 @@
     <Image Include="res\images\user_gray_24px.png" />
     <Image Include="res\LMMLoginManager.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

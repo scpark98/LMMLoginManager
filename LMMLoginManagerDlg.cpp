@@ -627,6 +627,19 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 			TRACE(_T("%s, %s\n"), m_edit_id.get_text(), m_edit_pw.get_text());
 			theApp.m_ini["LOGIN"]["ID"] = m_edit_id.get_text();
 			theApp.m_ini["LOGIN"]["PASS"] = Util::CryptPassword(m_edit_pw.get_text());
+
+			//사용자가 직접 PW 를 입력한 수동 로그인 — 자동 로그인 모드의 흔적을 모두 제거한다.
+			//누락 시 LMMHost(ConnectionThread::SetAgentIdPwToken) 가 token != "" 만 보고 m_isAutoLogin = TRUE 로
+			//판단 → NMS_CS_AUTO_LOGIN 송신 → 서버가 token 만 검증하고 password 무시 → 잘못된 PW 도 LOGIN_OK 처리.
+			//renewal 이전 LoginDlg.cpp:101-119 에 있던 처리를 복원.
+			theApp.m_ini["LOGIN"]["TOKEN"] = _T("");
+			//LMMHost 의 에러 분기들(ConnectionThread.cpp:996, 1332 등)이 manualLoginStatus != 1 이면
+			//AUTO_LOGIN 옵션을 자동 해제한다. 수동 로그인 시도임을 명시해서 사용자 의도를 보존.
+			theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 1;
+			//AutoPatcher 자동 설치 흐름의 잔재 — 사용자 수동 로그인이면 깨끗이 리셋.
+			set_registry_int(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("is auto setup"), 0);
+			set_registry_int(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("auto setup installed"), 0);
+
 			m_edit_id.EnableWindow(FALSE);
 			m_edit_pw.EnableWindow(FALSE);
 			Wait(10);
@@ -661,96 +674,189 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 	}
 }
 
+//서비스 binary path 정규화 비교 — 대소문자 무시 + 슬래시 통일 + 양쪽 trim.
+//SCM 에 등록된 lpBinaryPathName 과 우리가 만들 형식("\"C:\\..\\LMMAgent.exe\" -service") 을 비교한다.
+static bool paths_equal(CString a, CString b)
+{
+	a.Trim();
+	b.Trim();
+	a.MakeLower();
+	b.MakeLower();
+	a.Replace(_T("/"), _T("\\"));
+	b.Replace(_T("/"), _T("\\"));
+	return a == b;
+}
+
 bool CLMMLoginManagerDlg::service_start()
 {
-	//서비스가 이미 실행중이거나 설치되어 있을 경우 제거 후 새로 등록하여 실행시키도록 한다.
-	service_stop(true);
-	Wait(1000);
-
-	//서비스를 등록하고
-	logWrite(_T("install service (%s)..."), theApp.m_service_name);
 	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
-	ShellExecute(NULL, _T("open"), agent_path, _T("-install"), NULL, SW_SHOW);
+	//LMMHost::TvnService::getBinPath() 와 동일한 형식 — 큰따옴표 래핑 + " -service" 인자.
+	//SCM 의 lpBinaryPathName 과 직접 비교한다.
+	CString expected_binary = _T("\"") + agent_path + _T("\" -service");
 
-	Wait(1000);
+	//1) fast-path 결정 — 이미 우리 binary 로 등록된 서비스가 있으면 install 우회.
+	//   파생/충돌 서비스(다른 회사 솔루션 등) 가 같은 이름으로 등록된 경우만 delete+install 필요.
+	//   정상 고객은 한 제품만 사용 → 두 번째 로그인부터 거의 모두 fast-path 진입.
+	//   (변수명을 probe_* 로 명시 — 아래 install/start polling 의 동명 지역변수 hide 경고 방지.)
+	DWORD probe_err = 0;
+	CString probe_detail;
+	DWORD probe_status = service_command(theApp.m_service_name, _T("query"), probe_err, &probe_detail);
 
-	//서비스가 정상 등록될 때까지 기다렸다가 구동시킨다.
-	while (true)
+	bool fast_path = false;
+	if (probe_status >= 1)
+	{
+		CString current_binary;
+		DWORD bp_err = 0;
+		service_get_binary_path(theApp.m_service_name, current_binary, bp_err, &probe_detail);
+		if (bp_err == 0 && paths_equal(current_binary, expected_binary))
+		{
+			if (probe_status == SERVICE_RUNNING)
+				return true;
+			fast_path = true;
+		}
+		else if (bp_err == 0)
+		{
+			logWrite(_T("service exists but binary differs — full reinstall. expected: %s, current: %s"),
+					(LPCTSTR)expected_binary, (LPCTSTR)current_binary);
+		}
+	}
+
+	//install 단계는 fast-path 면 통째로 스킵.
+	if (!fast_path)
+	{
+		//service_command("delete") 가 marked-for-delete 풀림까지 동기 폴링 — 별도 Wait 불필요.
+		service_stop(true);
+
+		logWrite(_T("install service (%s)..."), theApp.m_service_name);
+		ShellExecute(NULL, _T("open"), agent_path, _T("-install"), NULL, SW_SHOW);
+
+		//install 완료까지 polling — ShellExecute 비동기. 타임아웃 30초.
+		const DWORD INSTALL_TIMEOUT_MS = 30000;
+		const DWORD INSTALL_POLL_MS = 500;
+		const DWORD overall_start = GetTickCount();
+		bool install_confirmed = false;
+
+		while (GetTickCount() - overall_start <= INSTALL_TIMEOUT_MS)
+		{
+			DWORD ec = 0;
+			CString det;
+			DWORD sc = service_command(theApp.m_service_name, _T("query"), ec, &det);
+
+			if (sc >= 1)
+			{
+				install_confirmed = true;
+				break;
+			}
+
+			if (ec == ERROR_SERVICE_DOES_NOT_EXIST)
+			{
+				Sleep(INSTALL_POLL_MS);
+				continue;
+			}
+
+			logWrite(_T("service query fail during install polling. error_code = %d (%s)"),
+					ec, (LPCTSTR)det);
+			return false;
+		}
+
+		if (!install_confirmed)
+		{
+			logWrite(_T("service install timeout (%d ms). LMMAgent.exe -install may have failed."),
+					INSTALL_TIMEOUT_MS);
+			return false;
+		}
+
+		logWrite(_T("service installed successfully. start service..."));
+	}
+
+	//2) start (fast-path / full-path 공통)
+	ShellExecute(NULL, _T("open"), agent_path, _T("-start"), NULL, SW_SHOW);
+
+	//start 완료까지 polling — ShellExecute 비동기이므로 install 단계와 동일하게 SERVICE_RUNNING 까지 동기 검증.
+	//타임아웃 30초: 정상 환경에선 수 초 안에 RUNNING. 못 닿으면 LMMAgent.exe -start 자체가 실패한 것
+	//(권한 부족, ServiceMain 진입 실패, 서비스 바이너리 즉시 종료 등).
+	const DWORD START_TIMEOUT_MS = 30000;
+	const DWORD START_POLL_MS = 500;
+	const DWORD start_poll_begin = GetTickCount();
+	bool start_confirmed = false;
+
+	while (GetTickCount() - start_poll_begin <= START_TIMEOUT_MS)
 	{
 		DWORD error_code = 0;
 		CString detail;
 		DWORD status_code = service_command(theApp.m_service_name, _T("query"), error_code, &detail);
-		trace(status_code);
 
-		//등록이 실패한 경우
-		if (status_code < 1)
+		//SERVICE_RUNNING (4) 만 성공. START_PENDING (2) 은 아직 시작 중이므로 폴링 계속.
+		if (status_code == SERVICE_RUNNING)
 		{
-			CString str = logWrite(_T("waiting for the service to be installed..."), theApp.m_service_name, error_code, detail);
-
-			Sleep(1000);
-			continue;
-			//theApp.m_msgbox.DoModal(str);
-			//return false;
+			start_confirmed = true;
+			break;
 		}
-		
-		break;
+
+		//서비스가 install 후 사라진 케이스 — 외부 조작 또는 LMMAgent 가 install 직후 죽음.
+		if (error_code == ERROR_SERVICE_DOES_NOT_EXIST)
+		{
+			logWrite(_T("service disappeared during start polling. error_code = %d (%s)"),
+					error_code, (LPCTSTR)detail);
+			return false;
+		}
+
+		//query 자체 실패 (ACCESS_DENIED 등) — 폴링 더 해도 같은 결과.
+		if (error_code != 0)
+		{
+			logWrite(_T("service query fail during start polling. error_code = %d (%s)"),
+					error_code, (LPCTSTR)detail);
+			return false;
+		}
+
+		//STOPPED / START_PENDING / 그 외 상태 — 대기 후 재시도.
+		//STOPPED 가 지속되면 LMMAgent 의 -start 자체가 호출 안 된 것일 수 있다 → 타임아웃이 잡음.
+		Sleep(START_POLL_MS);
 	}
 
-	logWrite(_T("service installed successfully. start service..."));
+	if (!start_confirmed)
+	{
+		logWrite(_T("service start timeout (%d ms). LMMAgent.exe -start may have failed."),
+				START_TIMEOUT_MS);
+		return false;
+	}
 
-	//서비스가 정상 등록되었다면 구동시킨다.
-	ShellExecute(NULL, _T("open"), agent_path, _T("-start"), NULL, SW_SHOW);
-
+	logWrite(_T("service started successfully."));
 	//이제 LMMAgent가 구동되면서 로그인 결과를 UDP로 전달하게 된다.
 	return true;
 }
 
 bool CLMMLoginManagerDlg::service_stop(bool include_delete)
 {
+	//성공/실패 판단은 status_code 가 아닌 error_code 로 한다 (새 service_command 의 정공법 계약).
+	//error_code == 0 = 성공, 그 외 = WinAPI 에러. delete 성공 시 status_code = 0 (서비스 없음 = 0 의 의미)
+	//이라 옛 호출 패턴(status_code == 0 = 실패) 과 호환되지 않는 점에 주의.
 	DWORD error_code = 0;
 	CString detail;
-	CString str;
 
-	if (service_command(theApp.m_service_name, _T("query"), error_code, &detail) == 0)
-	{
-		//str = logWrite(_T("service name = %s, query fail. error_code = %d (%s)"), theApp.m_service_name, error_code, detail);
-		//theApp.m_msgbox.DoModal(str);
+	//1) 서비스 존재 여부부터 확인. 없으면 stop/delete 둘 다 멱등 — 이미 원하는 상태.
+	service_command(theApp.m_service_name, _T("query"), error_code, &detail);
+	if (error_code == ERROR_SERVICE_DOES_NOT_EXIST)
 		return true;
-	}
-
-	//기존 동일한 이름으로 서비스가 실행중일때에도 제거 후 install, start 시킨다.
-	//이렇게 하는 이유는 간혹 솔루션을 테스트 할 경우 해당 서비스와 동일한 이름으로 서비스가 등록되었거나 실행중일 경우에는
-	//다른 경로의 LMMAgent.exe를 서비스로 구동시키므로 제대로 동작될 리 없다.
-	//따라서 이미 등록되어 있는 서비스라도	 무조건 제거 후 새로 등록하여 실행시키도록 한다.
-	if (error_code != ERROR_SERVICE_DOES_NOT_EXIST)//서비스가 존재할 경우 (실행중이든 중지중이든)
+	if (error_code != 0)
 	{
-		if (include_delete)
-		{
-			if (service_command(theApp.m_service_name, _T("delete"), error_code, &detail) == 0)
-			{
-				str = logWrite(_T("service delete fail. error_code = %d (%s)"), error_code, detail);
-				//theApp.m_msgbox.DoModal(str);
-				return false;
-			}
-			else
-			{
-				logWrite(_T("service delete success."));
-			}
-		}
-		else
-		{
-			if (service_command(theApp.m_service_name, _T("stop"), error_code, &detail) == 0)
-			{
-				str = logWrite(_T("service stop fail. error_code = %d (%s)"), error_code, detail);
-				return false;
-			}
-			else
-			{
-				logWrite(_T("service stop success."));
-			}
-		}
+		//ACCESS_DENIED / INVALID_HANDLE 등 — 서비스 상태를 알 수 없음. 진행하면 위험.
+		logWrite(_T("service query fail. error_code = %d (%s)"), error_code, (LPCTSTR)detail);
+		return false;
 	}
 
+	//2) 서비스 존재 — stop 또는 delete. 두 명령 모두 함수 안에서 동기 완료까지 대기·검증한다.
+	//   기존 동일 이름 서비스가 다른 경로의 LMMAgent.exe 를 가리킬 수 있어 무조건 제거 후 새로 등록.
+	LPCTSTR cmd = include_delete ? _T("delete") : _T("stop");
+	service_command(theApp.m_service_name, cmd, error_code, &detail);
+
+	if (error_code != 0)
+	{
+		logWrite(_T("service %s fail. error_code = %d (%s)"), cmd, error_code, (LPCTSTR)detail);
+		return false;
+	}
+
+	logWrite(_T("service %s success."), cmd);
 	return true;
 }
 

@@ -106,7 +106,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 					case LM_AGENT_LOGIN_OK:
 						{
 							//Config::SaveManualLoginStatus(0);
-							AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
+							theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
 							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->set_login_state(LOGIN_OK);
 							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
@@ -122,7 +122,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
 								theApp.m_msgbox.DoModal(_S(IDS_CONNECT_FAIL));
-								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
+								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
@@ -134,7 +134,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
 								theApp.m_msgbox.DoModal(_S(IDS_INVALID_IDPW));
-								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
+								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
@@ -143,7 +143,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 						break;
 					case LM_AGENT_LOGOUT:
 						{
-						AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
+						theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
 							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->set_login_state(LOGIN_BEFORE);
 							//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SetUserLogout(TRUE);
@@ -158,7 +158,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 
 								theApp.m_msgbox.DoModal(_T("server volume full"));// _S(IDS_SERVER_VOLUME_FULL));
 						
-								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
+								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
 								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
 							}
@@ -171,7 +171,7 @@ void CUdpSocket::OnReceive(int nErrorCode)
 							{
 								theApp.m_msgbox.DoModal(_T("server license expired"));// _S(IDS_SERVER_LICENSE_EXPIRED));
 						
-								AfxGetApp()->WriteProfileInt(_T("LOGIN"), _T("MANUAL_LOGIN_STATUS"), 0);
+								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
 								//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->StopLoading();
