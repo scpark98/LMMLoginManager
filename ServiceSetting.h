@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 class ServiceSetting
 {
@@ -7,7 +7,7 @@ public:
 	~ServiceSetting(void);
 
 	static BOOL LoadServiceSetting();
-	static CString GetProgramType();  // ¼­ºñ½º, ¼Ö·ç¼Ç ±¸ºÐ
+	static CString GetProgramType();  // ì„œë¹„ìŠ¤, ì†”ë£¨ì…˜ êµ¬ë¶„
 	static CString GetSetting();
 
 	static CString strManagerToken;

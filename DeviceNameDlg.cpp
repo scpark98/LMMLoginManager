@@ -99,9 +99,12 @@ void CDeviceNameDlg::OnBnClickedOk()
 {
 	CString new_dev_name = m_edit_name.get_text();
 
+	logWrite(_T("m_cur_dev_name = %s, new_dev_name = %s"), m_cur_dev_name, new_dev_name);
+
 	if (new_dev_name == m_cur_dev_name)
 	{
-		theApp.m_msgbox.DoModal(_S(IDS_ALREADY_USE_NAME), MB_ICONEXCLAMATION);
+		logWrite(_T("same name. skip."));
+		OnBnClickedCancel();
 		return;
 	}
 

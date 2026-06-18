@@ -903,8 +903,7 @@ bool CLMMLoginManagerDlg::get_latest_version()
 
 	if (param.status != HTTP_STATUS_OK)
 	{
-		CString str = logWrite(_T("Failed to get latest version info. status: %d"), param.status);
-		theApp.m_msgbox.DoModal(str);
+		logWrite(_T("Failed to get latest version info. status: %d"), param.status);
 		return false;
 	}
 	else
