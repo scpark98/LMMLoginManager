@@ -465,6 +465,8 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 
 				str.Format(_T("%s\\AutoPatcher.exe"), get_exe_directory());
 				ShellExecute(m_hWnd, _T("open"), str, nullptr, nullptr, SW_SHOW);
+				OnBnClickedCancel();
+				return;
 			}
 		});
 }
