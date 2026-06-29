@@ -154,9 +154,9 @@ void CUdpSocket::OnReceive(int nErrorCode)
 						{
 							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{
-								ShellExecute(NULL, _T("open"), _T("https://linkmemine.freshdesk.com/support/solutions/articles/151000206000--%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EC%9D%98-%EA%B3%84%EC%A0%95-%EB%93%B1%EB%A1%9D-%ED%95%9C%EB%8F%84%EA%B0%80-%EC%B4%88%EA%B3%BC%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4-%EB%98%90%EB%8A%94-%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4-%EB%A7%8C%EB%A3%8C-%EC%95%8C%EB%A6%BC-%ED%8C%9D%EC%97%85-%EC%B2%98%EB%A6%AC-%EB%B0%A9%EB%B2%95"), 0, 0, SW_SHOWNORMAL);
+								ShellExecute(nullptr, _T("open"), _T("https://linkmemine.freshdesk.com/support/solutions/articles/151000206000--%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EC%9D%98-%EA%B3%84%EC%A0%95-%EB%93%B1%EB%A1%9D-%ED%95%9C%EB%8F%84%EA%B0%80-%EC%B4%88%EA%B3%BC%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4-%EB%98%90%EB%8A%94-%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4-%EB%A7%8C%EB%A3%8C-%EC%95%8C%EB%A6%BC-%ED%8C%9D%EC%97%85-%EC%B2%98%EB%A6%AC-%EB%B0%A9%EB%B2%95"), 0, 0, SW_SHOWNORMAL);
 
-								theApp.m_msgbox.DoModal(_T("server volume full"));// _S(IDS_SERVER_VOLUME_FULL));
+								theApp.m_msgbox.DoModal(_S(IDS_SERVER_VOLUME_FULL));
 						
 								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();

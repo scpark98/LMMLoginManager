@@ -57,7 +57,7 @@ private:
 	void				invoke_ui(std::function<void()> func);
 
 protected:
-	void				init_dialog();
+	void				init_dialog_style();
 	void				init_controls();
 
 	CString				m_current_version = _T("0.0.0.0");

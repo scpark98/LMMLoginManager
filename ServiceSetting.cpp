@@ -132,13 +132,13 @@ BOOL ServiceSetting::LoadServiceSetting()
 
 CString ServiceSetting::GetProgramType()
 {
-	return theApp.m_ini["TYPE"]["PROGRAM_TYPE"];
+	return theApp.m_ini["TYPE"]["PROGRAM_TYPE"].to_CString();
 	//return Config::GetConfigValue(_T("TYPE"), _T("PROGRAM_TYPE"), _T(""), CUtil::GetProgramTypePath());
 }
 
 
 CString ServiceSetting::GetSetting()
 {
-	return theApp.m_ini["TYPE"]["SETTING"];
+	return theApp.m_ini["TYPE"]["SETTING"].to_CString();
 	//return Config::GetConfigValue(_T("TYPE"), _T("SETTING"), _T(""), CUtil::GetProgramTypePath());
 }

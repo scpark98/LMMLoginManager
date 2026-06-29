@@ -139,7 +139,7 @@ BOOL CLMMLoginManagerDlg::OnInitDialog()
 	theApp.m_auto_setup = is_auto_setup;
 	logWrite(_T("is_auto_setup = %d"), is_auto_setup);
 
-	init_dialog();
+	init_dialog_style();
 	init_controls();
 	m_udpSocket.Create();
 
@@ -151,7 +151,7 @@ BOOL CLMMLoginManagerDlg::OnInitDialog()
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
-void CLMMLoginManagerDlg::init_dialog()
+void CLMMLoginManagerDlg::init_dialog_style()
 {
 	SetWindowText(theApp.m_product_name);
 
@@ -218,14 +218,14 @@ void CLMMLoginManagerDlg::init_controls()
 	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_button_back);
 	//m_check_save_pw.set_text_color(m_theme.cr_text, false);
 	m_check_save_pw.set_back_color(m_theme.cr_back, false);
-	m_check_save_pw.SetCheck(theApp.m_ini["LOGIN"]["SAVE_PASSWORD"]);
+	m_check_save_pw.SetCheck(theApp.m_ini["LOGIN"]["SAVE_PASSWORD"].to_int());
 
 	m_check_auto_login.set_color_theme(m_theme);
 	m_check_auto_login.set_text(_S(IDS_BTN_AUTO_LOGIN));
 	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_button_back);
 	//m_check_auto_login.set_text_color(m_theme.cr_text, false);
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
-	m_check_auto_login.SetCheck(theApp.m_ini["LOGIN"]["AUTO_LOGIN"]);
+	m_check_auto_login.SetCheck(theApp.m_ini["LOGIN"]["AUTO_LOGIN"].to_int());
 
 	m_button_login.set_color_theme(m_theme);
 	m_button_login.set_text(_T("서버 연결중..."));
@@ -246,7 +246,7 @@ void CLMMLoginManagerDlg::init_controls()
 
 bool CLMMLoginManagerDlg::get_server()
 {
-	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"].to_CString();
 	CString header = _T("token: ") + agent_token + _T("\r\n");
 
 	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/server"));
@@ -420,15 +420,14 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 				m_check_save_pw.EnableWindow();
 				m_button_login.EnableWindow();
 
-				m_edit_id.set_text(CString(theApp.m_ini["LOGIN"]["ID"]));
-				CString pw = theApp.m_ini["LOGIN"]["PASS"];
+				m_edit_id.set_text(theApp.m_ini["LOGIN"]["ID"].to_CString());
+				CString pw = theApp.m_ini["LOGIN"]["PASS"].to_CString();
+
 				if (!pw.IsEmpty())
 				{
 					pw = Util::EnCryptPassword(pw);
 					m_edit_pw.set_text(pw);
 				}
-
-				m_edit_id.SetFocus();
 
 				//로그인을 진행하기 전 현재 에이전트의 로그인 상태 정보를 요청한다.
 				//true : 이미 로그인 된 에이전트이므로 로그인 완료 상태로 처리하고 로그인 후처리 진행
@@ -452,6 +451,8 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 					m_edit_id.EnableWindow();
 					m_edit_pw.EnableWindow();
 				}
+
+				m_edit_id.SetFocus();
 			}
 			else
 			{
@@ -460,7 +461,7 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 
 				CString str;
 
-				str.Format(_T("현재 버전(%s)보다 최신 버전(%s)가 존재합니다. 자동 패치를 진행합니다."), m_current_version, m_latest_version);
+				str.Format(_T("현재 버전(%s)보다 최신 버전(%s)가 존재합니다. 잠시 후 자동 패치를 진행합니다."), m_current_version, m_latest_version);
 				theApp.m_msgbox.DoModal(str, MB_OK, 5);
 
 				str.Format(_T("%s\\AutoPatcher.exe"), get_exe_directory());
@@ -620,6 +621,7 @@ void CLMMLoginManagerDlg::OnBnClickedCheckAutoLogin()
 	theApp.m_ini["LOGIN"]["AUTO_LOGIN"] = m_check_auto_login.GetCheck();
 }
 
+//상태에 따라 "로그인" 또는 "로그아웃" 버튼으로 동작한다.
 void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 {
 	if (m_login_state == LOGIN_BEFORE)
@@ -660,7 +662,7 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 	{
 		//이미 로그인 된 상태에서 "로그아웃" 클릭 시
 		//auto login이면 서비스를 중지하고
-		if (theApp.m_ini["LOGIN"]["AUTO_LOGIN"])
+		if (theApp.m_ini["LOGIN"]["AUTO_LOGIN"].to_int())
 		{
 			service_stop();
 		}
@@ -673,6 +675,11 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 		set_login_state(LOGIN_BEFORE);
 		select_child_dialog();
 		theApp.terminate_other_processes();
+
+		//로그아웃을 누르면 id에 focus를 주고 캐럿을 맨 뒤로 이동시킨 상태로 표시한다.
+		//focus만 주면 텍스트 전체가 선택된 상태로 표시되어 보기 좋지 않다.
+		m_edit_id.SetFocus();
+		m_edit_id.set_sel(m_edit_id.get_text().GetLength(), -1);
 	}
 }
 
@@ -958,7 +965,6 @@ void CLMMLoginManagerDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == timer_check_version)
 	{
 		KillTimer(timer_check_version);
-
 		m_thread.start([this](CSCThread& th) { thread_get_version_and_login(th); });
 	}
 
@@ -990,9 +996,9 @@ int CLMMLoginManagerDlg::get_device_onoff_status()
 {
 	logWrite(_T("%s"), __function__);
 
-	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"].to_CString();
 	CString header = _T("token: ") + agent_token + _T("\r\n");
-	CString device_id = theApp.m_ini["SERVER"]["DID"];
+	CString device_id = theApp.m_ini["SERVER"]["DID"].to_CString();
 
 	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/GetLmmDeviceOnOff"), _T("POST"));
 	param.body.Format(_T("{\"device_id\":\"%s\"}"), device_id);
@@ -1057,8 +1063,8 @@ void CLMMLoginManagerDlg::request_put_device_env_info()
 	CRequestUrlParams params(theApp.m_ip, theApp.m_port, _T("/lmm/api/v1.0/device_env_info"), _T("POST"));
 	params.use_thread = true;
 	params.body.Format(_T("{\"method\": \"PUT\", \"request_type\": \"agent\", \"login_id\": \"%s\", \"device_id\": \"%s\", \"os_type\": 1, \"os_str\": \"%s\", \"default_browser\": \"%s\", \"default_browser_version\": \"%s\"}"),
-		CString(theApp.m_ini["LOGIN"]["ID"]),// Config::LoadConfigString(_T("LOGIN"), _T("ID"), _T("")),
-		CString(theApp.m_ini["SERVER"]["DID"]),//Config::LoadConfigString(_T("SERVER"), _T("DID"), _T("")),
+		theApp.m_ini["LOGIN"]["ID"].to_CString(),// Config::LoadConfigString(_T("LOGIN"), _T("ID"), _T("")),
+		theApp.m_ini["SERVER"]["DID"].to_CString(),//Config::LoadConfigString(_T("SERVER"), _T("DID"), _T("")),
 		get_windows_version_number(),
 		default_browser,
 		browser_version);

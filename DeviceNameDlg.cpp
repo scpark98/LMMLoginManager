@@ -76,7 +76,7 @@ BOOL CDeviceNameDlg::OnInitDialog()
 	m_edit_name.set_text_color(Gdiplus::Color::RoyalBlue);// Gdiplus::Color::Black);
 	m_edit_name.set_back_color(Gdiplus::Color::White);
 	m_edit_name.set_limit_text(250);
-	m_cur_dev_name = theApp.m_ini["SERVER"]["DNAME"];
+	m_cur_dev_name = theApp.m_ini["SERVER"]["DNAME"].to_CString();
 	m_edit_name.set_text(m_cur_dev_name);
 	m_edit_name.set_font_weight(FW_SEMIBOLD);
 	m_edit_name.set_round(4);
@@ -91,6 +91,8 @@ BOOL CDeviceNameDlg::OnInitDialog()
 	//m_button_cancel.set_back_color(m_theme.cr_title_text);
 	m_button_cancel.set_font_weight(FW_SEMIBOLD);
 
+	SetWindowText(theApp.m_product_name + _T(" Device Name"));
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
 }
@@ -101,18 +103,28 @@ void CDeviceNameDlg::OnBnClickedOk()
 
 	logWrite(_T("m_cur_dev_name = %s, new_dev_name = %s"), m_cur_dev_name, new_dev_name);
 
+	//20260629 scpark 입력된 이름이 기존 이름과 같다면 더 이상 진행시킬 필요는 없다.
+	//단, 맨 처음 설치시에는 이름 입력 후 그룹까지도 선택되어야 하므로 그냥 리턴시키면 안된다.
+	//맨 처음 설치라면 이 체크는 하지 않아야 한다.
 	if (new_dev_name == m_cur_dev_name)
 	{
-		logWrite(_T("same name. skip."));
-		OnBnClickedCancel();
-		return;
+		if (__argc >= 2 && CString(__targv[2]).Compare(_T("-first")) == 0)
+		{
+
+		}
+		else
+		{
+			logWrite(_T("same name. skip."));
+			OnBnClickedCancel();
+			return;
+		}
 	}
 
 	//사용자가 입력 후 엔터를 치면
 	//1.입력 시 이미 존재하는지 확인, 중복된 이름이면 팝업 메시지 표시하고 종료
 	//2.유효한 입력이면 이름변경 API 호출
-	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
-	CString mgr_id = theApp.m_ini["LOGIN"]["ID"];
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"].to_CString();
+	CString mgr_id = theApp.m_ini["LOGIN"]["ID"].to_CString();
 	CString header = _T("token: ") + agent_token + _T("\r\n");
 	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/GetLmmManagerInfo"), _T("POST"));
 
@@ -178,7 +190,7 @@ void CDeviceNameDlg::OnBnClickedOk()
 
 bool CDeviceNameDlg::is_dev_name_duplicated(CString new_dev_name)
 {
-	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"].to_CString();
 	CString header = _T("token: ") + agent_token + _T("\r\n");
 	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/GetLmmDeviceDuplicateCheck"), _T("POST"));
 
@@ -236,8 +248,8 @@ bool CDeviceNameDlg::is_dev_name_duplicated(CString new_dev_name)
 
 bool CDeviceNameDlg::set_dev_name(CString new_dev_name)
 {
-	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
-	CString device_id = theApp.m_ini["SERVER"]["DID"];
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"].to_CString();
+	CString device_id = theApp.m_ini["SERVER"]["DID"].to_CString();
 	CString header = _T("token: ") + agent_token + _T("\r\n");
 
 	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/UpdateLmmDeviceName"), _T("POST"));

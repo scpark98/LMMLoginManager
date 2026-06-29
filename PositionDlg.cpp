@@ -58,11 +58,12 @@ BOOL CPositionDlg::OnInitDialog()
 
 	m_ini.SetFileName(get_exe_directory() + _T("\\share.ini"));
 
-	int nLeft = m_ini["SHARE"]["LEFT"];
-	int nTop = m_ini["SHARE"]["TOP"];
-	int nWidth = m_ini["SHARE"]["WIDTH"];
-	int nHeight = m_ini["SHARE"]["HEIGHT"];
-	int nUse = m_ini["SHARE"]["USE"];
+	int nLeft = m_ini["SHARE"]["LEFT"].to_int();
+	int nTop = m_ini["SHARE"]["TOP"].to_int();
+	int nWidth = m_ini["SHARE"]["WIDTH"].to_int();
+	int nHeight = m_ini["SHARE"]["HEIGHT"].to_int();
+	int nUse = m_ini["SHARE"]["USE"].to_int();
+
 	if (nUse)
 	{
 		m_btnUse.SetCheck(TRUE);
@@ -112,6 +113,9 @@ BOOL CPositionDlg::OnInitDialog()
 	//m_btnSave.SetSolidButton(Color(242, 242, 242), Color(202, 202, 202), Color(142, 142, 142), Color(100, 100, 100), 48, 48);
 	//m_btnSave.SetButtonIcon(IDP_SAVE, IDP_SAVE, IDP_SAVE, IDP_SAVE, 12, 12, 24, 24);
 	//m_btnSave.SetBorder(TRUE, Color(105, 105, 105));
+
+	SetWindowText(theApp.m_product_name + _T(" Position"));
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
 }

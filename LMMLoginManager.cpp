@@ -111,9 +111,9 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	m_product_name = get_file_property(_T(""), _T("ProductName"));
 	m_config_path.Format(_T("%s\\config.ini"), get_exe_directory());
 	m_ini.SetFileName(m_config_path);
-	m_ip = m_ini["SERVER"]["LIP"];
-	m_port = m_ini["SERVER"]["LPORT"];
-	m_company_key = m_ini["SERVER"]["COMPANY_KEY"];
+	m_ip = m_ini["SERVER"]["LIP"].to_CString();
+	m_port = m_ini["SERVER"]["LPORT"].to_int();
+	m_company_key = m_ini["SERVER"]["COMPANY_KEY"].to_int();
 
 	CheckRegistrySetTLS();
 
@@ -127,14 +127,6 @@ BOOL CLMMLoginManagerApp::InitInstance()
 
 	m_msgbox.create(nullptr, _S(IDS_TITLE));
 	m_msgbox.set_color_theme(m_theme);// CSCColorTheme::color_theme_dark_gray);
-
-	//for test
-	//int res = m_msgbox.DoModal(_T("서버 접속 실패 (<cr=crimson>error = -1)</cr>\n서버에 접근할 수 없습니다.</cr>\n\n<b>방화벽</b> 또는 <b>외부 네트워크 접근</b>이 가능한 환경인지\n먼저 확인하시기 바랍니다."), MB_OKCANCEL | MB_ICONSTOP);
-	//int res = m_msgbox.DoModal(_T("기본 메시지박스 LinkMeMine Original Theme"));
-	//trace(res);
-
-	//res = m_msgbox.DoModal(_T("두번째 상자"), MB_OKCANCEL | MB_ICONSTOP);
-	//trace(res);
 
 	if (__argc >= 2)
 	{
@@ -199,7 +191,7 @@ BOOL CLMMLoginManagerApp::InitInstance()
 
 			if (m_msgbox.DoModal(strMessage, MB_OKCANCEL) == IDOK)
 			{
-				int nAutoLogin = m_ini["LOGIN"]["AUTO_LOGIN"];// Config::LoadIsAutoLogin();
+				int nAutoLogin = m_ini["LOGIN"]["AUTO_LOGIN"].to_int();// Config::LoadIsAutoLogin();
 
 				logWrite(_T("nAutoLogin = %d."), nAutoLogin);
 
@@ -282,14 +274,18 @@ BOOL CLMMLoginManagerApp::InitInstance()
 			//CDeviceDeleteDlg dlg;
 			//if (dlg.DoModal() == IDOK)
 			{
-				CRequestUrlParams param(m_ip, m_port, _T("/api/v1.0/linkmemine/DeleteLmmDeviceInfo"), _T("POST"));
+				//20260629 scpark 기존 코드는 LMM_LINUX에 의해 .netAPI 또는 flask가 호출되는 방식이었으나
+				//.netAPI로 맞춰서 호출해도 status=200이 떨어지지만 InvalidToken 에러가 발생하여 장치가 지워지지 않는다.
+				//따라서 flaskAPI(fastAPI)에 맞춰서 파라미터들을 변경한 후 삭제 성공함.
+				//원래는 "DELETE"으로 줘야하지만 "POST"로 줘도 처리되도록 kym이 수정해 놓음.
+				CRequestUrlParams param(m_ip, m_port, _T("/agent/api/v1.0/DeleteLmmDeviceInfo"), _T("POST"));
 
-				CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
-				CString device_id = theApp.m_ini["SERVER"]["DID"];
+				CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"].to_CString();
+				CString device_id = theApp.m_ini["SERVER"]["DID"].to_CString();
 				CString header = _T("token: ") + agent_token + _T("\r\n");
 
 				param.headers.push_back(header);
-				param.body.Format(_T("{\"user_id\":\"%s\", \"device_id\":\"%s\"}"), m_ini["LOGIN"]["ID"], device_id);
+				param.body.Format(_T("{\"user_id\":\"%s\", \"device_id\":\"%s\"}"), m_ini["LOGIN"]["ID"].to_CString(), device_id);
 
 				logWrite(_T("param : %s"), param.get_param_str());
 				request_url(&param);
@@ -301,7 +297,7 @@ BOOL CLMMLoginManagerApp::InitInstance()
 				}
 				else
 				{
-					logWriteE(_T("success to delete device from DB."));
+					logWrite(_T("success to delete device from DB."));
 				}
 				/*
 				ApiParams* apiParams = new ApiParams[1];

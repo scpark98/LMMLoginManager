@@ -125,6 +125,8 @@ BOOL CDeviceGroupDlg::OnInitDialog()
 		m_tree.MoveWindow(rc);
 	}
 
+	SetWindowText(theApp.m_product_name + _T(" Device Group"));
+
 	SetTimer(timer_get_group_list, 100, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -217,8 +219,8 @@ void CDeviceGroupDlg::get_group_list()
 {
 	release_group_info();
 
-	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"];
-	CString mgr_id = theApp.m_ini["LOGIN"]["ID"];
+	CString agent_token = theApp.m_ini["LOGIN"]["TOKEN"].to_CString();
+	CString mgr_id = theApp.m_ini["LOGIN"]["ID"].to_CString();
 	CString header = _T("token: ") + agent_token + _T("\r\n");
 
 	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/agent/api/v1.0/GetLmmGroupList"), _T("POST"));
