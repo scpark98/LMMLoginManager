@@ -440,6 +440,74 @@ void CLMMLoginManagerApp::set_company_key(int company_key)
 	m_ini["SERVER"]["COMPANY_KEY"] = m_company_key;
 }
 
+//20240912 scpark 개인향/기업향, 승인결재 프로세스 설정값 조회.
+//3.0 SE 백엔드만 이 API 를 제공하므로 1.0 에서는 호출하지 말 것 (호출 지점에서 가드).
+int CLMMLoginManagerApp::request_account_type(int* account_type, int* flag_function_agent_approval)
+{
+	*account_type = -1;
+	*flag_function_agent_approval = -1;
+
+	CRequestUrlParams param(m_ip, m_port, _T("/lmm/api/v1.0/request_account_type"), _T("POST"));
+	param.body.Format(_T("{\"user_id\":\"%s\"}"), m_ini["LOGIN"]["ID"].to_CString());
+	request_url(&param);
+
+	logWrite(_T("status = %d, url = %s, body = %s\nresult = \n%s"),
+		param.status, param.full_url, param.body, param.result);
+
+	//응답 예)
+	//{
+	//  "api": "RequestAccountTypeAPI",
+	//  "meta": null,
+	//  "objects": { "account_type": 1, "flag_connection_reason": 1, "flag_function_agent_approval": 0 },
+	//  "status": 200
+	//}
+	if (param.status == HTTP_STATUS_OK)
+	{
+		Json json;
+		json.parse(param.result);
+		*account_type = json.doc["objects"]["account_type"].GetInt();
+		*flag_function_agent_approval = json.doc["objects"]["flag_function_agent_approval"].GetInt();
+
+		//기업향 & 결재프로세스 on 이 아닌 사용자는 등록 절차가 없으므로 REGI_STATUS = 9 로 표식.
+		if (*account_type == 0 || *flag_function_agent_approval == 0)
+			m_ini["LOGIN"]["REGI_STATUS"] = 9;
+
+		return 1;
+	}
+
+	return 0;
+}
+
+//20240924 scpark 그룹 자동 등록.
+//배경: 웹에서 에이전트 삭제 후 재설치 시 config.ini 의 FIRST_START=0 이 남아 Agent 자동등록이
+//누락되던 문제 대응. LoginManager 가 로그인 성공 직후 이 API 를 호출하고, 백엔드는 이미 등록된
+//디바이스면 no-op, 아니면 디바이스 등록 + 기본 그룹 자동 배정을 수행.
+//기업향 & 결재프로세스 on 사용자는 등록신청 절차를 거치므로 자동등록 대상에서 제외.
+int CLMMLoginManagerApp::agent_auto_device_and_group_register()
+{
+	logWrite(_T("%s"), __function__);
+
+	int account_type = -1;
+	int flag_function_agent_approval = -1;
+	request_account_type(&account_type, &flag_function_agent_approval);
+	logWrite(_T("account_type = %d, flag_function_agent_approval = %d"),
+		account_type, flag_function_agent_approval);
+
+	if (account_type == 1 && flag_function_agent_approval == 1)
+		return 0;
+
+	CRequestUrlParams param(m_ip, m_port, _T("/lmm/api/v1.0/agent_auto_device_and_group_register"), _T("POST"));
+	param.body.Format(_T("{\"user_id\":\"%s\", \"device_pk\":%d}"),
+		m_ini["LOGIN"]["ID"].to_CString(),
+		m_ini["SERVER"]["SVRNUM"].to_int());
+	request_url(&param);
+
+	logWrite(_T("status = %d, url = %s, body = %s\nresult = \n%s"),
+		param.status, param.full_url, param.body, param.result);
+
+	return (param.status == HTTP_STATUS_OK) ? 1 : 0;
+}
+
 void CLMMLoginManagerApp::CheckRegistrySetTLS()
 {
 	DWORD dataType = REG_DWORD;

@@ -1094,6 +1094,8 @@ int CLMMLoginManagerDlg::get_device_onoff_status()
 
 void CLMMLoginManagerDlg::request_put_device_env_info()
 {
+	logWrite(_T("%s"), __function__);
+
 	CString browser_path;
 	CString browser_version;
 	CString default_browser = get_default_browser_info(&browser_path, &browser_version);
@@ -1122,6 +1124,134 @@ void CLMMLoginManagerDlg::request_put_device_env_info()
 	}
 
 	OnBnClickedCancel();
+}
+
+//20240912 scpark 3.0 SE 전용 — 백엔드로부터 에이전트 등록신청 상태값을 조회.
+//return : 0 신청중, 1 미등록, 2 승인됨, 3 거절, 4 취소, -1 요청 실패.
+DWORD CLMMLoginManagerDlg::request_regi_status()
+{
+	CString device_id = theApp.m_ini["SERVER"]["DID"].to_CString();
+
+	CRequestUrlParams params(theApp.m_ip, theApp.m_port, _T(""), _T("GET"));
+	params.sub_url.Format(
+		_T("/lmm/api/v1.0/temp_envcheck/config-value-return?input_type=agent_exists&device_id=%s"),
+		device_id);
+	request_url(&params);
+
+	logWrite(_T("status = %d, url = %s, verb = %s, body = %s\nresult = %s"),
+		params.status, params.full_url, params.verb, params.body, params.result);
+
+	if (params.status == HTTP_STATUS_OK)
+	{
+		Json json;
+		json.parse(params.result);
+		return atoi(json.doc["objects"].GetString());
+	}
+
+	CString str;
+	str.Format(_T("%s\nrequest url = %s, error code = %d"),
+		_S(IDS_REGISTRATION_REQUEST_FAILED), params.full_url, params.status);
+	theApp.m_msgbox.DoModal(str);
+	return (DWORD)-1;
+}
+
+//20240912 scpark 3.0 SE 전용 — 로그인 성공 후 등록신청 상태에 맞는 안내창 표시.
+//호출 시점 UI 스레드에서만 (UdpSocket LM_AGENT_LOGIN_OK).
+void CLMMLoginManagerDlg::check_regi_status()
+{
+	logWrite(_T("%s"), __function__);
+
+	if (m_login_state == LOGIN_BEFORE)
+	{
+		logWrite(_T("skip because of LOGIN_BEFORE state."));
+		return;
+	}
+
+	int account_type = -1;
+	int registration_required = -1;
+	int ret = theApp.request_account_type(&account_type, &registration_required);
+	logWrite(_T("account_type = %d, registration_required = %d"), account_type, registration_required);
+
+	if (ret == 1)
+	{
+		//개인향 또는 결재프로세스 off — 안내 없이 창만 닫음.
+		if (account_type == 0 || registration_required == 0)
+		{
+			CDialogEx::OnCancel();
+			return;
+		}
+	}
+	else
+	{
+		theApp.m_msgbox.DoModal(_S(IDS_AGENT_REGI_NEEDED_OR_NOT_REQUEST_FAILED));
+		return;
+	}
+
+	//기업향 + 결재프로세스 on. 실제 등록 상태 확인 루프.
+	int regi_status = -1;
+	int retry_count = 0;
+	while (true)
+	{
+		regi_status = (int)request_regi_status();
+		if (regi_status >= 0 && regi_status <= 4)
+			break;
+
+		if (++retry_count > 10)
+		{
+			theApp.m_msgbox.DoModal(_S(IDS_SERVER_NO_RESPONSE));
+			CDialogEx::OnCancel();
+			return;
+		}
+		Wait(1000);
+	}
+
+	logWrite(_T("regi_status = %d"), regi_status);
+
+	CString dname  = theApp.m_ini["SERVER"]["DNAME"].to_CString().Trim();
+	CString svrNum = theApp.m_ini["SERVER"]["SVRNUM"].to_CString().Trim();
+	CString id     = theApp.m_ini["LOGIN"]["ID"].to_CString().Trim();
+	CString str;
+
+	if (regi_status == 0)
+	{
+		//신청중 안내
+		str.Format(_T("ID : %s, Device : %s\n\n%s\n\n%s"),
+			id, dname,
+			_S(IDS_AGENT_BEING_APPLYING),
+			_S(IDS_AUTO_LOGINOUT_AFTER_APPROVAL));
+		theApp.m_msgbox.DoModal(str);
+	}
+	else if (regi_status == 2)
+	{
+		//승인됨 — 5초 자동 종료
+		str.Format(_T("ID : %s, Device : %s\n\n%s"),
+			id, dname, _S(IDS_APPROVED_AGENT));
+		theApp.m_msgbox.DoModal(str, MB_OK, 5);
+		return;
+	}
+	else if (regi_status == 1 || regi_status == 3 || regi_status == 4)
+	{
+		//미등록/거절/취소 — 웹 등록신청 페이지 열기
+		theApp.m_msgbox.DoModal(_S(IDS_UNREGISTERED_AGENT));
+
+		CString url;
+		if (theApp.m_port == 80)
+			url.Format(_T("http://%s:%d/#/ko/popup/agent?userId=%s&deviceFk=%s"),
+				theApp.m_ip, theApp.m_port, id, svrNum);
+		else
+			url.Format(_T("https://%s:%d/#/ko/popup/agent?userId=%s&deviceFk=%s"),
+				theApp.m_ip, theApp.m_port, id, svrNum);
+		ShellExecute(NULL, _T("open"), url, 0, 0, SW_SHOWNORMAL);
+	}
+	else
+	{
+		str.Format(_T("invalid registration status = %d"), regi_status);
+		theApp.m_msgbox.DoModal(str);
+		CDialogEx::OnCancel();
+		return;
+	}
+
+	CDialogEx::OnCancel();
 }
 
 void CLMMLoginManagerDlg::OnBnClickedButtonRestart()

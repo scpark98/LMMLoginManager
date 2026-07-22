@@ -114,13 +114,39 @@ void CUdpSocket::OnReceive(int nErrorCode)
 							//Config::SaveManualLoginStatus(0);
 							theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->set_login_state(LOGIN_OK);
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
-							//20240723 scpark 로그인이 완료되면 앱을 종료시키지 말고 완료된 모습을 그대로 표시하자.
-							//20240729 scpark 로그인 완료 후 창을 남겨두지 않고 종료시키도록 변경
-							//20240731 scpark 로그인 완료 후 메인창을 그냥 닫지말고 업데이트를 수행한 후 종료시키자.
-							//20260511 scpark 로그인 완료 후 사용자 구동 환경 정보를 DB에 업데이트 한 후 종료시킨다.
-							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->request_put_device_env_info();
+							CLMMLoginManagerDlg* dlg = (CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd;
+							dlg->set_login_state(LOGIN_OK);
+							dlg->select_child_dialog();
+
+							//20260511 scpark 로그인 완료 후 사용자 구동 환경 정보를 DB에 업데이트한다.
+							//3.0 SE 원본에서도 SelectChildDialog(LOGIN_OK) 브랜치 안에서 동일 함수를 호출하므로
+							//두 축 모두 무가드 실행.
+							dlg->request_put_device_env_info();
+
+#if defined(_LINKMEMINE_30)
+							//20240912 scpark 3.0 SE : 서비스가 시작되며 LMMAgent 로부터 LOGIN_OK 를 받은 직후에만
+							//등록신청 상태를 확인한다 (이미 로그인된 상태에서는 이 신호가 오지 않으므로
+							//check_regi_status() 를 별도 진입점에서도 호출 — LoginDlg 타이머 등).
+							theApp.agent_auto_device_and_group_register();
+							dlg->check_regi_status();
+#endif
+						}
+						break;
+
+					//20240912 scpark 3.0 SE : LMMAgent 가 서비스 컨텍스트라 메시지박스를 직접 띠울 수 없어
+					//msg.param1/param2 로 텍스트를 실어 보내고 LoginManager 가 대신 UI 를 처리한다.
+					//현재 원본(3.0 old)은 msg 텍스트를 사용하지 않고 창 종료만 유도하는 형태이므로 동일 이식.
+					case LM_AGENT_MESSAGEBOX:
+						{
+							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->SendMessage(WM_CLOSE);
+						}
+						break;
+
+					//3.0 SE 원본에서 몸통이 모두 주석 처리된 상태(수신은 하되 no-op). 원본 스타일 유지.
+					case LM_AGENT_URL_OPEN:
+						{
+							//((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->set_login_state(LOGIN_BEFORE);
+							//ShellExecute(NULL, _T("open"), msg.param1, NULL, NULL, SW_SHOWNORMAL);
 						}
 						break;
 					case LM_AGENT_SERVER_CON_FAIL:
@@ -135,7 +161,12 @@ void CUdpSocket::OnReceive(int nErrorCode)
 							}
 						}
 						break;
+					//20240913 scpark ID/PW 어느 쪽이 틀렸는지 구분해서 알리는 것은 보안 취약점(CWE-209)
+					//이므로 두 케이스는 동일 문구·동일 처리로 합친다.
+					//1.0 Agent 는 LM_AGENT_ID_PASS_FAIL(104), 3.0 SE Agent 는 LM_AGENT_LOGIN_FAILED(114)
+					//를 보낸다. 통합에서는 두 상수 모두 수신할 수 있으므로 fall-through 로 몸통 공유.
 					case LM_AGENT_ID_PASS_FAIL:
+					case LM_AGENT_LOGIN_FAILED:
 						{
 							if( ((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->get_login_state() == LOGIN_BEFORE )
 							{

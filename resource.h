@@ -81,9 +81,16 @@
 #define IDB_PNG1                        155
 #define IDB_FOLDER                      155
 #define IDS_BUTTON_REFRESH              155
+#define IDS_AGENT_REGI_NEEDED_OR_NOT_REQUEST_FAILED 156
+#define IDS_APPROVED_AGENT              157
 #define IDB_SAVE                        158
+#define IDS_UNREGISTERED_AGENT          158
 #define IDB_PNG2                        159
 #define IDB_SAVE_DISABLED               159
+#define IDS_AUTO_LOGINOUT_AFTER_APPROVAL 159
+#define IDS_AGENT_BEING_APPLYING        160
+#define IDS_REGISTRATION_REQUEST_FAILED 161
+#define IDS_SERVER_NO_RESPONSE          162
 #define IDS_BTN_LOGIN_P2P               207
 #define IDS_LOGIN                       208
 #define IDC_BUTTON_CONFIG               1000

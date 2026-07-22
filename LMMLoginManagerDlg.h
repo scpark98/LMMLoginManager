@@ -27,6 +27,15 @@ public:
 
 	void				request_put_device_env_info();
 
+	//20240912 scpark 3.0 SE 전용 — 로그인 성공 후 에이전트 등록신청 상태를 조회하고
+	//상태에 맞는 안내창을 띠운다. 개인향(account_type==0) 또는 결재프로세스 off 사용자는
+	//즉시 창을 닫고 종료. 기업향 & 결재프로세스 on 사용자만 등록/승인/거절 안내가 표시된다.
+	//호출 지점(UdpSocket LM_AGENT_LOGIN_OK 등)에서 #ifdef _LINKMEMINE_30 로 가드하므로
+	//함수 자체는 무가드 상시 컴파일 (내부에서 3.0 SE 백엔드 API 만 호출).
+	void				check_regi_status();
+	//return 0: 신청중, 1/3/4: 미등록/거절/취소, 2: 승인됨, -1: 요청 실패
+	DWORD				request_regi_status();
+
 	//config.ini를 다시 읽어 설정 관련 컨트롤 상태를 갱신한다.
 	//LMMAgent가 config.ini를 직접 고쳐도(로그인 실패 시 AUTO_LOGIN 해제 등) UI는 시작 시 읽은 상태로
 	//남아 실제 설정과 어긋나므로, LM_AGENT_CONFIG_CHANGED 수신 시 호출한다.

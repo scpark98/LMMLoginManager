@@ -31,6 +31,17 @@ public:
 
 	void				terminate_other_processes();
 
+	//20240912 scpark 개인향/기업향, 승인결재 프로세스 설정값 조회 (3.0 SE 백엔드에서만 의미 있음)
+	//return : 1 = 성공, 0 = 실패
+	//account_type : 0 = 개인향, 1 = 기업향
+	//flag_function_agent_approval : 0 = 결재프로세스 off, 1 = on
+	//기업향 & 결재프로세스 on 이 아니면 [LOGIN]REGI_STATUS = 9 로 표식 저장.
+	int					request_account_type(int* account_type, int* flag_function_agent_approval);
+
+	//20240924 scpark 그룹 자동 등록.
+	//기업향 & 결재프로세스 on 인 경우만 자동등록을 건너뛰고, 그 외는 서버가 알아서 자동 등록/그룹 배정.
+	int					agent_auto_device_and_group_register();
+
 	//이 경로는 AutoPatcher(통합 버전)의 m_reg_path와 동일해야 한다.
 #if defined(_LINKMEMINE_10)
 	CString				m_service_name = _T("LMMSvcAgentService");
