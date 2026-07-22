@@ -86,8 +86,11 @@ BOOL CLMMLoginManagerApp::InitInstance()
 
 #if defined(_LINKMEMINE_10)
 	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMine/Log/LMMLgiMgr"));
+	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
 #elif defined(_LINKMEMINE_30)
 	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMineSE/Log/LMMLgiMgr"));
+	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine_se);
+
 #endif
 
 	gLog.write_start_log();
@@ -121,9 +124,6 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	BOOL bDeleteDevice = FALSE;
 	BOOL bUIStart = TRUE;
 
-	//int color_theme = m_theme.get_color_theme(_T(""))
-	m_theme.set_color_theme(CSCColorTheme::color_theme_claude06);
-	//m_theme.cr_button_back = Gdiplus::Color(91, 162, 217);
 
 	m_msgbox.create(nullptr, _S(IDS_TITLE));
 	m_msgbox.set_color_theme(m_theme);// CSCColorTheme::color_theme_dark_gray);

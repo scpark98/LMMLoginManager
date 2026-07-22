@@ -6,8 +6,6 @@
 #include "Common/Functions.h"
 
 const int MAX_BUF = 256;
-const int UDP_PORT = 20177;
-
 
 CUdpSocket::CUdpSocket(void)
 {
@@ -24,7 +22,7 @@ BOOL CUdpSocket::Create()
 	int plusCnt = 0;
 	while(TRUE)
 	{
-		if (CAsyncSocket::Create(UDP_PORT + plusCnt, SOCK_DGRAM))
+		if (CAsyncSocket::Create(theApp.m_udp_port + plusCnt, SOCK_DGRAM))
 		{
 			break;
 		}
@@ -100,7 +98,15 @@ void CUdpSocket::OnReceive(int nErrorCode)
 				{
 					case LM_AGENT_EXECUTE_OK:
 						{
-					
+
+						}
+						break;
+					//LMMAgent가 config.ini의 설정값을 변경했음을 알려온다. param1 = section, param2 = entry.
+					//항목별로 분기하면 항목이 늘 때마다 누락되므로 전체를 다시 읽는다.
+					//로그인 상태와 무관한 처리이므로 다른 case들과 달리 get_login_state() 가드를 두지 않는다.
+					case LM_AGENT_CONFIG_CHANGED:
+						{
+							((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->reload_config_to_controls();
 						}
 						break;
 					case LM_AGENT_LOGIN_OK:

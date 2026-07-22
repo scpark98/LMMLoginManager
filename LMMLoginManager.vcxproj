@@ -214,14 +214,14 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot);</IncludePath>
+    <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot);</IncludePath>
+    <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">
@@ -235,21 +235,21 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot);</IncludePath>
+    <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>C:\Program Files (x86)\LinkMeMine\Service\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot);</IncludePath>
+    <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot);</IncludePath>
+    <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -640,6 +640,10 @@
     <ClInclude Include="$(CommonLibDir)\thread\CSCThread\SCThread.h" />
     <ClInclude Include="..\..\Common\CDialog\CSCColorPicker\SCColorPicker.h" />
     <ClInclude Include="..\..\Common\CDialog\CSCColorPicker\SCDropperDlg.h" />
+    <ClInclude Include="..\..\Common\CDialog\SCShapeDlg\SCShapeDlg.h" />
+    <ClInclude Include="..\..\Common\CListCtrl\CSCListCtrl\list_data.h" />
+    <ClInclude Include="..\..\Common\CListCtrl\CSCListCtrl\SCHeaderCtrl.h" />
+    <ClInclude Include="..\..\Common\CListCtrl\CSCListCtrl\SCListCtrl.h" />
     <ClInclude Include="..\..\Common\CMenu\CSCMenuBar\SCMenu.h" />
     <ClInclude Include="..\..\Common\CScrollbar\SCScrollbar\SCScrollbar.h" />
     <ClInclude Include="..\..\Common\CSliderCtrl\SCSliderCtrl\SCSliderCtrl.h" />
@@ -852,6 +856,62 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\Common\CDialog\CSCColorPicker\SCDropperDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CDialog\SCShapeDlg\SCShapeDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CListCtrl\CSCListCtrl\list_data.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CListCtrl\CSCListCtrl\SCHeaderCtrl.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CListCtrl\CSCListCtrl\SCListCtrl.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">NotUsing</PrecompiledHeader>

@@ -27,6 +27,11 @@ public:
 
 	void				request_put_device_env_info();
 
+	//config.ini를 다시 읽어 설정 관련 컨트롤 상태를 갱신한다.
+	//LMMAgent가 config.ini를 직접 고쳐도(로그인 실패 시 AUTO_LOGIN 해제 등) UI는 시작 시 읽은 상태로
+	//남아 실제 설정과 어긋나므로, LM_AGENT_CONFIG_CHANGED 수신 시 호출한다.
+	void				reload_config_to_controls();
+
 	//for test
 	void				change_theme(bool next_theme = true);
 

@@ -205,11 +205,13 @@ void CLMMLoginManagerDlg::init_controls()
 	m_edit_id.set_dim_text(_S(IDS_INPUT_ID));
 	m_edit_id.set_prefix_image(IDB_USER);
 	m_edit_id.set_round(8);
+	m_edit_id.set_use_default_disabled_color(false);// , Gdiplus::Color(255, 0x2a, 0x2a, 0x30));
 
 	m_edit_pw.set_color_theme(m_theme);
 	m_edit_pw.set_dim_text(_S(IDS_INPUT_PASSWORD));
 	m_edit_pw.set_prefix_image(IDB_PASSWORD);
 	m_edit_pw.set_round(8);
+	m_edit_pw.set_use_default_disabled_color(false);// , Gdiplus::Color(255, 0x2a, 0x2a, 0x30));
 	m_edit_pw.set_password_mode();
 	m_edit_pw.set_action_button(CSCStaticEdit::action_password_toggle);
 
@@ -218,14 +220,12 @@ void CLMMLoginManagerDlg::init_controls()
 	m_check_save_pw.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_button_back);
 	//m_check_save_pw.set_text_color(m_theme.cr_text, false);
 	m_check_save_pw.set_back_color(m_theme.cr_back, false);
-	m_check_save_pw.SetCheck(theApp.m_ini["LOGIN"]["SAVE_PASSWORD"].to_int());
 
 	m_check_auto_login.set_color_theme(m_theme);
 	m_check_auto_login.set_text(_S(IDS_BTN_AUTO_LOGIN));
 	m_check_auto_login.set_check_style(CGdiButton::check_style_round_fill, m_theme.cr_button_back);
 	//m_check_auto_login.set_text_color(m_theme.cr_text, false);
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
-	m_check_auto_login.SetCheck(theApp.m_ini["LOGIN"]["AUTO_LOGIN"].to_int());
 
 	m_button_login.set_color_theme(m_theme);
 	m_button_login.set_text(_T("서버 연결중..."));
@@ -242,6 +242,14 @@ void CLMMLoginManagerDlg::init_controls()
 	//m_static_version.set_back_color(m_theme.cr_back);
 	//m_static_version.set_text_color(m_theme.cr_title_back_active);
 	m_static_version.set_blink(true, 600, 400);
+
+	reload_config_to_controls();
+}
+
+void CLMMLoginManagerDlg::reload_config_to_controls()
+{
+	m_check_save_pw.SetCheck(theApp.m_ini["LOGIN"]["SAVE_PASSWORD"].to_int());
+	m_check_auto_login.SetCheck(theApp.m_ini["LOGIN"]["AUTO_LOGIN"].to_int());
 }
 
 bool CLMMLoginManagerDlg::get_server()
@@ -552,7 +560,11 @@ void CLMMLoginManagerDlg::OnPaint()
 
 		r = rc;
 		r.top = r.bottom - 40;
+#if defined(_LINKMEMINE_10)
 		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
+#elif defined(_LINKMEMINE_30)
+		draw_text(g, r, _S(IDS_TITLE) + _T(" 3.0 SE"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
+#endif
 
 		r.right -= 8;
 		r.bottom += 5;
@@ -628,6 +640,32 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 	{
 		if (validate_login_input())
 		{
+			//AUTO_LOGIN이 꺼진 채로 로그인하면 이후 재부팅 시 자동 로그인이 안 되어 원격 연결이 불가해진다.
+			//에이전트가 로그인 실패로 임의 해제한 경우뿐 아니라 사용자가 뜻을 모르고 체크를 해제한 경우도
+			//같은 결과이므로, 해제 상태이면 경위를 따지지 않고 항상 확인받는다.
+			//"예" = 옵션을 다시 켜고 진행, "아니오" = 해제된 상태 그대로 진행. 어느 쪽이든 로그인은 계속된다.
+			if (theApp.m_ini["LOGIN"]["AUTO_LOGIN"].to_int() == 0)
+			{
+				//8자리 hex 는 #AARRGGBB 순이므로(colors.cpp get_gcolor_from_hexa_str) 혼동을 피해 6자리로 준다.
+				//<br> 는 줄 종결자라 진행 중인 텍스트가 있으면 그 줄을 확정만 한다(SCParagraph.cpp build_paragraph_str).
+				//빈 줄을 만들려면 <br> 두 개가 필요하고, 맨 앞은 진행 중인 줄이 없으므로 하나로 충분하다.
+				//첫 줄 위·마지막 줄 아래 여백은 라인 0이 shift 대상에서 제외되어(SCParagraph.cpp:910) <ls>만으로는
+				//만들 수 없다. 빈 줄을 두고 그 빈 줄과의 간격을 <ls=1.5>로 준다.
+				CString msg = _T("<br><ls=1.5><cr=#FBBF24><b>\"부팅 시 자동 로그인\"</b></cr><cr=#94A3B8> 옵션이 해제된 상태입니다.<br><br>")
+							  _T("이 옵션이 해제된 경우 <cr=#FFFFFF>에이전트 재시작 또는 시스템 재시작 시</cr><br>")
+							  _T("<cr=#F87171><b>자동 로그인되지 않으며 원격연결이 불가합니다.</b></cr><br><br>")
+							  _T("위 옵션을 체크하고 진행할까요?<br>")
+							  _T("<cr=#94A3B8>(\"아니오\" 선택 시 해제된 상태로 로그인합니다)</cr><ls=1.5><br>");
+
+				if (theApp.m_msgbox.DoModal(msg, MB_YESNO) == IDYES)
+				{
+					theApp.m_ini["LOGIN"]["AUTO_LOGIN"] = 1;
+					m_check_auto_login.SetCheck(1);
+					//자동 체크되었음을 사용자가 인지할 정도의 약간의 딜레이를 준 후 로그인을 시도한다.
+					Wait(1000);
+				}
+			}
+
 			TRACE(_T("%s, %s\n"), m_edit_id.get_text(), m_edit_pw.get_text());
 			theApp.m_ini["LOGIN"]["ID"] = m_edit_id.get_text();
 			theApp.m_ini["LOGIN"]["PASS"] = Util::CryptPassword(m_edit_pw.get_text());

@@ -15,6 +15,9 @@
     <Filter Include="소스 파일\Util">
       <UniqueIdentifier>{c5430a83-5467-4e0b-8a3b-faf5413c4840}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CSCListCtrl">
+      <UniqueIdentifier>{73bbfc70-128e-41c3-a36b-fe8c3a64cfbc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(CommonLibDir)\ResizeCtrl.h">
@@ -143,6 +146,18 @@
     <ClInclude Include="..\..\Common\CSliderCtrl\SCSliderCtrl\SCSliderCtrl.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\CDialog\SCShapeDlg\SCShapeDlg.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CListCtrl\CSCListCtrl\SCHeaderCtrl.h">
+      <Filter>Common\CSCListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CListCtrl\CSCListCtrl\SCListCtrl.h">
+      <Filter>Common\CSCListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CListCtrl\CSCListCtrl\list_data.h">
+      <Filter>Common\CSCListCtrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LMMLoginManager.cpp">
@@ -249,6 +264,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Common\CSliderCtrl\SCSliderCtrl\SCSliderCtrl.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CDialog\SCShapeDlg\SCShapeDlg.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CListCtrl\CSCListCtrl\SCHeaderCtrl.cpp">
+      <Filter>Common\CSCListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CListCtrl\CSCListCtrl\SCListCtrl.cpp">
+      <Filter>Common\CSCListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CListCtrl\CSCListCtrl\list_data.cpp">
+      <Filter>Common\CSCListCtrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
