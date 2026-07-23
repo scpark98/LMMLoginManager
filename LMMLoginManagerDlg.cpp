@@ -556,15 +556,11 @@ void CLMMLoginManagerDlg::OnPaint()
 		m_logo.draw(g, r);
 
 		r.OffsetRect(0, m_logo.height + 8);
-		draw_text(g, r, _S(IDS_TITLE), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
+		draw_text(g, r, _S(IDS_PRODUCT), 16, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
 		r = rc;
 		r.top = r.bottom - 40;
-#if defined(_LINKMEMINE_10)
-		draw_text(g, r, _S(IDS_TITLE) + _T(" 1.0"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
-#elif defined(_LINKMEMINE_30)
-		draw_text(g, r, _S(IDS_TITLE) + _T(" 3.0 SE"), 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
-#endif
+		draw_text(g, r, theApp.m_product_title_full, 10, Gdiplus::FontStyleBold, 0, 0.0f, _T("Segoe UI"), m_theme.cr_text);
 
 		r.right -= 8;
 		r.bottom += 5;

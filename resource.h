@@ -7,6 +7,7 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_LMMLOGINMANAGER_DIALOG      102
 #define IDS_TITLE                       102
+#define IDS_PRODUCT                     102
 #define IDP_SOCKETS_INIT_FAILED         103
 #define IDS_ST_LOGIN                    104
 #define IDS_BTN_UPDATE                  105

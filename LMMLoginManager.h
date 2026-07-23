@@ -55,6 +55,8 @@ public:
 
 	CSCMessageBox		m_msgbox;
 
+	CString				m_product_title;
+	CString				m_product_title_full;
 	CString				m_product_name;
 
 	int					get_company_key() { return m_company_key; }

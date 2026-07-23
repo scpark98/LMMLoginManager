@@ -59,7 +59,7 @@ BOOL CVersionDlg::OnInitDialog()
 	m_static_title.set_text_color(m_theme.cr_title_text);
 	m_static_title.set_back_color(m_theme.cr_title_back_inactive);
 	m_static_title.set_font_weight(FW_BOLD);
-	m_static_title.set_text(_T("  ") + _S(IDS_TITLE));
+	m_static_title.set_text(_T("  ") + _S(IDS_PRODUCT));
 
 	m_button_close.add_image(IDB_CLOSE);
 	m_button_close.set_back_color(m_theme.cr_title_back_inactive);

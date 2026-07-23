@@ -222,7 +222,7 @@ void CPositionDlg::OnPaint()
 		textSF.SetAlignment(Gdiplus::StringAlignmentNear);
 		textSF.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
-		CString strDraw = _S(IDS_TITLE);
+		CString strDraw = _S(IDS_PRODUCT);
 
 		Gdiplus::RectF boundRect;
 		g.MeasureString(strDraw, -1, &titleFont, Gdiplus::PointF(7, 1), &boundRect);

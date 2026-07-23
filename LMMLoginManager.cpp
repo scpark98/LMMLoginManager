@@ -84,14 +84,21 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	// 적절한 내용으로 수정해야 합니다.
 	SetRegistryKey(_T("Koino"));
 
+	m_msgbox.create(nullptr);
+	m_msgbox.set_color_theme(m_theme);
+
+	m_product_title = _S(IDS_PRODUCT);
+
 #if defined(_LINKMEMINE_10)
 	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMine/Log/LMMLgiMgr"));
-	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine);
+	m_theme.set_color_theme(CSCColorTheme::color_theme_claude06);
+	m_product_title_full = m_product_title + _T(" 1.0");
 #elif defined(_LINKMEMINE_30)
 	gLog.set(get_known_folder(CSIDL_COMMON_DOCUMENTS) + _T("/LinkMeMineSE/Log/LMMLgiMgr"));
 	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine_se);
-
+	m_product_title_full = m_product_title + _T(" 3.0 SE");
 #endif
+	m_msgbox.set_title(m_product_title_full);
 
 	gLog.write_start_log();
 
@@ -125,8 +132,6 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	BOOL bUIStart = TRUE;
 
 
-	m_msgbox.create(nullptr, _S(IDS_TITLE));
-	m_msgbox.set_color_theme(m_theme);// CSCColorTheme::color_theme_dark_gray);
 
 	if (__argc >= 2)
 	{
