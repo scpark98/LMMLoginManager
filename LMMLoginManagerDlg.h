@@ -36,6 +36,11 @@ public:
 	//return 0: 신청중, 1/3/4: 미등록/거절/취소, 2: 승인됨, -1: 요청 실패
 	DWORD				request_regi_status();
 
+	//20260723 by claude. LM_AGENT_LOGIN_FAILED / LM_AGENT_ID_PASS_FAIL 수신 후 재입력 편의를 위해
+	//ID edit 에 포커스 + 텍스트 전체선택. 사용자가 바로 다시 타이핑하면 이전 값을 덮어쓴다.
+	//3.0 SE old CLoginDlg::set_id_input_focus 이식.
+	void				set_id_input_focus();
+
 	//config.ini를 다시 읽어 설정 관련 컨트롤 상태를 갱신한다.
 	//LMMAgent가 config.ini를 직접 고쳐도(로그인 실패 시 AUTO_LOGIN 해제 등) UI는 시작 시 읽은 상태로
 	//남아 실제 설정과 어긋나므로, LM_AGENT_CONFIG_CHANGED 수신 시 호출한다.

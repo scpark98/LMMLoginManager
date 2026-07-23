@@ -636,6 +636,27 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 	{
 		if (validate_login_input())
 		{
+#if defined(_LINKMEMINE_30)
+			//20260723 by claude. 3.0 SE 는 멀티그룹 정책상 저장된 ID 이외의 다른 ID 로의 스위칭 로그인 불허.
+			//(3.0 SE old CLoginDlg::OnBnClickedBtnLogin l.122-130 이식.)
+			//스위칭이면 아래 자동설치 리셋도 실행하지 않고 그대로 return 하여 원본 흐름과 일치시킨다.
+			CString cur_id = theApp.m_ini["LOGIN"]["ID"].to_CString();
+			if (!cur_id.IsEmpty() && m_edit_id.get_text() != cur_id)
+			{
+				theApp.m_msgbox.DoModal(_S(IDS_SWITCHING_ID_LOGIN_NOT_SUPPORTED), MB_ICONEXCLAMATION);
+				return;
+			}
+#endif
+
+			//AutoPatcher 자동 설치 흐름의 잔재 — 사용자 수동 로그인이면 깨끗이 리셋.
+			set_registry_int(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("is auto setup"), 0);
+			set_registry_int(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("auto setup installed"), 0);
+			CString auto_setup_filepath;
+			get_registry_str(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("setup filepath"), &auto_setup_filepath);
+			DeleteFile(auto_setup_filepath);
+			set_registry_str(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("setup filename"), _T(""));
+			set_registry_str(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("setup filepath"), _T(""));
+
 			//AUTO_LOGIN이 꺼진 채로 로그인하면 이후 재부팅 시 자동 로그인이 안 되어 원격 연결이 불가해진다.
 			//에이전트가 로그인 실패로 임의 해제한 경우뿐 아니라 사용자가 뜻을 모르고 체크를 해제한 경우도
 			//같은 결과이므로, 해제 상태이면 경위를 따지지 않고 항상 확인받는다.
@@ -674,9 +695,6 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 			//LMMHost 의 에러 분기들(ConnectionThread.cpp:996, 1332 등)이 manualLoginStatus != 1 이면
 			//AUTO_LOGIN 옵션을 자동 해제한다. 수동 로그인 시도임을 명시해서 사용자 의도를 보존.
 			theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 1;
-			//AutoPatcher 자동 설치 흐름의 잔재 — 사용자 수동 로그인이면 깨끗이 리셋.
-			set_registry_int(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("is auto setup"), 0);
-			set_registry_int(HKEY_LOCAL_MACHINE, theApp.m_reg_path, _T("auto setup installed"), 0);
 
 			m_edit_id.EnableWindow(FALSE);
 			m_edit_pw.EnableWindow(FALSE);
@@ -1023,6 +1041,15 @@ void CLMMLoginManagerDlg::select_child_dialog()
 		m_button_restart.ShowWindow(SW_SHOW);
 		m_button_login.set_text(_T("로그아웃"));
 	}
+}
+
+//20260723 by claude. 3.0 SE old CLoginDlg::set_id_input_focus 이식.
+//로그아웃 후 커서-맨-뒤 패턴(l.715-716)과 달리 로그인 실패는 입력 오류 재시도 상황이므로
+//전체선택으로 두어 사용자가 바로 타이핑하면 이전 값을 덮어쓴다.
+void CLMMLoginManagerDlg::set_id_input_focus()
+{
+	m_edit_id.SetFocus();
+	m_edit_id.set_sel(0, -1);
 }
 
 //online(>0), offline(0), request error(<0)

@@ -173,8 +173,12 @@ void CUdpSocket::OnReceive(int nErrorCode)
 								theApp.m_msgbox.DoModal(_S(IDS_INVALID_IDPW));
 								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
-								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->service_stop();
-								((CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd)->select_child_dialog();
+								CLMMLoginManagerDlg* dlg = (CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd;
+								dlg->service_stop();
+								dlg->select_child_dialog();
+								//20260723 by claude. 로그인 실패는 입력 오류 재시도 상황 — ID edit 포커스 + 전체선택으로
+								//사용자가 바로 다시 타이핑하면 덮어쓰도록. (3.0 SE old set_id_input_focus 이식.)
+								dlg->set_id_input_focus();
 							}
 						}
 						break;
