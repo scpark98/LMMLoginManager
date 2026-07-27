@@ -187,7 +187,11 @@ void CLMMLoginManagerDlg::init_controls()
 	//cr_back 등 dialog 측에서 가한 오버라이드까지 그대로 전달하기 위해 객체 자체를 넘김.
 	theApp.m_msgbox.set_color_theme(m_theme);
 
-	m_logo.load(IDB_LOGO);
+#if defined(_LINKMEMINE_10)
+	m_logo.load(IDB_LOGO_LMM10);
+#elif defined(_LINKMEMINE_30)
+	m_logo.load(IDB_LOGO_LMM30);
+#endif
 
 	m_button_config.add_image(IDB_CONFIG);
 	m_button_config.set_color_theme(m_theme);
