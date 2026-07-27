@@ -1121,6 +1121,7 @@
     <Image Include="res\images\screen.png" />
     <Image Include="res\images\tablet.png" />
     <Image Include="res\images\user_gray_24px.png" />
+    <Image Include="res\LMMLoginManager 1.0.ico" />
     <Image Include="res\LMMLoginManager.ico" />
   </ItemGroup>
   <ItemGroup>

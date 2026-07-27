@@ -751,6 +751,27 @@ static bool paths_equal(CString a, CString b)
 bool CLMMLoginManagerDlg::service_start()
 {
 	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
+
+	//20260727 by claude. LMMAgent.exe 가 없으면 install/start 가 실패하고 UDP 응답을 못 받아 무한 대기에 빠진다.
+	//파일 존재를 먼저 확인 — 없으면 AutoPatcher(파라미터 없이 실행 시 누락/구버전 파일 복구) 실행을 권하고 중단.
+	//AutoPatcher 마저 없으면 재설치 안내. 어느 경우든 로그인 시도로 비활성화된 입력 UI 를 복구한다.
+	if (!PathFileExists(agent_path))
+	{
+		logWrite(_T("LMMAgent.exe not found: %s"), (LPCTSTR)agent_path);
+		CString patcher_path = get_exe_directory() + _T("\\AutoPatcher.exe");
+		if (PathFileExists(patcher_path))
+		{
+			if (theApp.m_msgbox.DoModal(_S(IDS_AGENT_EXE_NOT_FOUND), MB_YESNO) == IDYES)
+				ShellExecute(NULL, _T("open"), patcher_path, nullptr, NULL, SW_SHOW);
+		}
+		else
+		{
+			theApp.m_msgbox.DoModal(_S(IDS_AGENT_AND_PATCHER_NOT_FOUND));
+		}
+		select_child_dialog();
+		return false;
+	}
+
 	//LMMHost::TvnService::getBinPath() 와 동일한 형식 — 큰따옴표 래핑 + " -service" 인자.
 	//SCM 의 lpBinaryPathName 과 직접 비교한다.
 	CString expected_binary = _T("\"") + agent_path + _T("\" -service");

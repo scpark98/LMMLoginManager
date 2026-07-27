@@ -93,6 +93,8 @@
 #define IDS_REGISTRATION_REQUEST_FAILED 161
 #define IDS_SERVER_NO_RESPONSE          162
 #define IDS_SWITCHING_ID_LOGIN_NOT_SUPPORTED 163
+#define IDS_AGENT_EXE_NOT_FOUND         164
+#define IDS_AGENT_AND_PATCHER_NOT_FOUND 165
 #define IDS_BTN_LOGIN_P2P               207
 #define IDS_LOGIN                       208
 #define IDC_BUTTON_CONFIG               1000
