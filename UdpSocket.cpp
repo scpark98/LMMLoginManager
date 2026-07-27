@@ -173,6 +173,15 @@ void CUdpSocket::OnReceive(int nErrorCode)
 								theApp.m_msgbox.DoModal(_S(IDS_INVALID_IDPW));
 								theApp.m_ini["LOGIN"]["MANUAL_LOGIN_STATUS"] = 0;
 
+								//20260727 by claude. 로그인 실패 후 잘못된 자격정보가 ini 에 잔존하면
+								//다음 auto-login 시 그대로 재사용되어 다시 실패하는 사이클에 빠진다.
+								//다음 로그인은 사용자 입력으로 새로 채우도록 3개 항목을 비운다.
+								//UNIFIED_CERTIFIED 는 통합본 내부 참조는 없으나 LMMAgent 측 참조 가능성이 있어 원본대로 함께 클리어.
+								//(3.0 SE old UdpSocket.cpp LM_AGENT_LOGIN_FAILED l.160-162 이식.)
+								theApp.m_ini["LOGIN"]["ID"] = _T("");
+								theApp.m_ini["LOGIN"]["PASS"] = _T("");
+								theApp.m_ini["LOGIN"]["UNIFIED_CERTIFIED"] = _T("");
+
 								CLMMLoginManagerDlg* dlg = (CLMMLoginManagerDlg*)AfxGetApp()->m_pMainWnd;
 								dlg->service_stop();
 								dlg->select_child_dialog();

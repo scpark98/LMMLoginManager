@@ -1286,6 +1286,13 @@ void CLMMLoginManagerDlg::OnBnClickedButtonRestart()
 
 void CLMMLoginManagerDlg::OnDestroy()
 {
+	//20260727 by claude. "비밀번호 저장" 이 체크 해제된 상태로 종료되면 ini 의 PW 를 비운다.
+	//체크 해제는 곧 "이 컴퓨터에 PW 를 남기지 않겠다" 는 의사표시이므로 세션이 끝나는 시점에 지운다.
+	//체크 시점(OnBnClickedCheckSavePw)에는 SAVE_PASSWORD 플래그만 저장하고 PW 자체는 유지하므로 여기서 지워야 한다.
+	//(3.0 SE old CLoginDlg::OnDestroy l.517-518 이식.)
+	if (m_check_save_pw.GetSafeHwnd() && m_check_save_pw.GetCheck() == BST_UNCHECKED)
+		theApp.m_ini["LOGIN"]["PASS"] = _T("");
+
 	// 로그인 안된 상태에서 종료될 경우, 모두 강제 종료한다. - pjh
 	if (m_login_state == LOGIN_BEFORE)
 	{
