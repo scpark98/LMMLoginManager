@@ -298,6 +298,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|x64'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 3.0 SE.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -325,6 +328,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|x64'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 1.0.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -379,6 +385,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 3.0 SE.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -406,6 +415,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 1.0.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -464,6 +476,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|Win32'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 1.0.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -498,6 +513,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 3.0 SE.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -563,6 +581,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|x64'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 1.0.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -594,6 +615,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|x64'">
+    <PreBuildEvent>
+      <Command>copy /y "$(ProjectDir)res\LMMLoginManager 3.0 SE.ico" "$(ProjectDir)res\LMMLoginManager.ico"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
