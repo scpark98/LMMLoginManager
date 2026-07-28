@@ -98,7 +98,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
@@ -219,14 +219,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm30|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
+    <OutDir>$(MSBuildProgramFiles32)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Lmm10|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>C:\Program Files (x86)\LinkMeMine\Service\Agent/</OutDir>
+    <OutDir>$(MSBuildProgramFiles32)\LinkMeMine\Service\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
@@ -240,14 +240,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm10|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\Program Files (x86)\LinkMeMine\Service\Agent/</OutDir>
+    <OutDir>$(MSBuildProgramFiles32)\LinkMeMine\Service\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Lmm30|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\Program Files (x86)\LinkMeMineSE\Agent/</OutDir>
+    <OutDir>$(MSBuildProgramFiles32)\LinkMeMineSE\Agent/</OutDir>
     <IntDir>$(Configuration)/$(PlatformTarget)/</IntDir>
     <IncludePath>$(WindowsSdk_71A_IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CommonLibRoot)</IncludePath>
     <TargetName>LMMLgiMgr</TargetName>
@@ -543,7 +543,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "..\servicesetup_new\bin\Agent\$(TargetName)$(TargetExt)"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "D:\1.Projects_C++\LMM_SE_Koino\servicesetup_new\bin\Agent\$(TargetName)$(TargetExt)"</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>

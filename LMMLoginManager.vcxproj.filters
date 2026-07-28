@@ -367,6 +367,12 @@
     <Image Include="res\LMMLoginManager 1.0.ico">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="res\images\IDB_LOGO_LMM10.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\images\IDB_LOGO_LMM30.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

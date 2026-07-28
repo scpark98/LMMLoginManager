@@ -209,13 +209,13 @@ void CLMMLoginManagerDlg::init_controls()
 	m_edit_id.set_dim_text(_S(IDS_INPUT_ID));
 	m_edit_id.set_prefix_image(IDB_USER);
 	m_edit_id.set_round(8);
-	m_edit_id.set_use_default_disabled_color(false);// , Gdiplus::Color(255, 0x2a, 0x2a, 0x30));
+	m_edit_id.set_back_color_disabled();//Gdiplus::Color(255, 0x2a, 0x2a, 0x30) 처럼 테마색 지정 가능(기본 LightGray)
 
 	m_edit_pw.set_color_theme(m_theme);
 	m_edit_pw.set_dim_text(_S(IDS_INPUT_PASSWORD));
 	m_edit_pw.set_prefix_image(IDB_PASSWORD);
 	m_edit_pw.set_round(8);
-	m_edit_pw.set_use_default_disabled_color(false);// , Gdiplus::Color(255, 0x2a, 0x2a, 0x30));
+	m_edit_pw.set_back_color_disabled();//Gdiplus::Color(255, 0x2a, 0x2a, 0x30) 처럼 테마색 지정 가능(기본 LightGray)
 	m_edit_pw.set_password_mode();
 	m_edit_pw.set_action_button(CSCStaticEdit::action_password_toggle);
 
@@ -232,6 +232,9 @@ void CLMMLoginManagerDlg::init_controls()
 	m_check_auto_login.set_back_color(m_theme.cr_back, false);
 
 	m_button_login.set_color_theme(m_theme);
+	//20260728 by claude. disable 로 시작("서버 연결중...")하므로 disabled 에도 버튼 텍스트색을 유지(회색 방지).
+	m_button_login.set_text_color_disabled(m_theme.cr_button_text);
+	m_button_login.set_back_color_disabled(m_theme.cr_button_back);
 	m_button_login.set_text(_T("서버 연결중..."));
 	//m_button_login.set_text_color(m_theme.cr_title_text, false);
 	//m_button_login.set_back_color(m_theme.cr_back_selected);// , false);
@@ -766,7 +769,12 @@ bool CLMMLoginManagerDlg::service_start()
 		if (PathFileExists(patcher_path))
 		{
 			if (theApp.m_msgbox.DoModal(_S(IDS_AGENT_EXE_NOT_FOUND), MB_YESNO) == IDYES)
+			{
 				ShellExecute(NULL, _T("open"), patcher_path, nullptr, NULL, SW_SHOW);
+
+				//scpark. LMMLgiMgr.exe 자기 자신도 종료시킨 후 패치되어야 한다.
+				//또는 AutoPatcher.exe에서 LMMLgiMgr.exe를 종료시키고 패치해야 한다.
+			}
 		}
 		else
 		{
