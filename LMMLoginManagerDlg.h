@@ -80,13 +80,11 @@ protected:
 	void				init_controls();
 
 	CString				m_current_version = _T("0.0.0.0");
-	CString				m_latest_version = _T("0.0.0.0");
 
 	int					m_login_state = LOGIN_BEFORE;
 
 	bool				get_server();
 	bool				get_current_version();
-	bool				get_latest_version();
 	bool				validate_login_input();
 
 	//online(>0), offline(0), request error(<0)

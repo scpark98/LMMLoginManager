@@ -139,7 +139,7 @@ void CDeviceGroupDlg::OnBnClickedOk()
 	HTREEITEM hItem = m_tree.GetSelectedItem();
 	auto data = (GroupInfo*)m_tree.GetItemData(hItem);
 	
-	trace(data->GetGroupName());
+	sctrace(data->GetGroupName());
 
 	CString header = _T("token: ") + theApp.m_ini["LOGIN"]["TOKEN"].to_CString() + _T("\r\n");
 

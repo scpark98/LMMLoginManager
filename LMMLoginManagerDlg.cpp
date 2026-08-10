@@ -388,102 +388,63 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 	if (th.stop_requested())
 		return;
 
-	m_button_login.set_text(_T("버전 확인중..."));
-	Wait(10);
-
 	//우선 SERVER -> GET_SERVER 설정에 따른 동작 처리
 	if (theApp.m_ini["SERVER"]["GET_SERVER"].to_int() != 0)
 	{
 		get_server();
 	}
 
-	if (!get_current_version())
-	{
-		invoke_ui([this]
-			{
-				m_button_login.set_text(_T("현재 버전 확인 실패"));
-				theApp.m_msgbox.DoModal(_T("현재 버전을 얻어올 수 없습니다."));
-				OnBnClickedCancel();
-			});
-		return;
-	}
+	//20260810 by claude. 버전 검사/자동 패치 게이트 제거 — LMMAgent.exe(서비스)가 유휴 시 자체 버전검사/패치를 담당한다.
+	//여기서는 현재 버전(로컬)만 표시하고 곧바로 로그인 흐름으로 진행한다. (get_latest_version 서버 조회 및 패치 분기 삭제)
+	get_current_version();
 
 	if (th.stop_requested())
 		return;
 	
-	if (!get_latest_version())
-	{
-		invoke_ui([this]
-			{
-				m_button_login.set_text(_T("최신 버전 확인 실패"));
-				theApp.m_msgbox.DoModal(_T("서버에서 버전 정보를 얻어올 수 없습니다."));
-				OnBnClickedCancel();
-			});
-		return;
-	}
-
 	invoke_ui([this]
 		{
-			if (m_current_version == m_latest_version)
+			m_button_login.set_text(_S(IDS_BTN_LOGIN));
+			m_static_version.set_blink(false);
+			m_static_version.set_halign(DT_RIGHT);
+			m_static_version.set_text_color(Gdiplus::Color::LightGray);
+			m_static_version.set_text(_T("ver ") + m_current_version);
+			m_check_auto_login.EnableWindow();
+			m_check_save_pw.EnableWindow();
+			m_button_login.EnableWindow();
+
+			m_edit_id.set_text(theApp.m_ini["LOGIN"]["ID"].to_CString());
+			CString pw = theApp.m_ini["LOGIN"]["PASS"].to_CString();
+
+			if (!pw.IsEmpty())
 			{
-				m_button_login.set_text(_S(IDS_BTN_LOGIN));
-				m_static_version.set_blink(false);
-				m_static_version.set_halign(DT_RIGHT);
-				m_static_version.set_text_color(Gdiplus::Color::LightGray);
-				m_static_version.set_text(_T("ver ") + m_current_version);
-				m_check_auto_login.EnableWindow();
-				m_check_save_pw.EnableWindow();
-				m_button_login.EnableWindow();
+				pw = Util::EnCryptPassword(pw);
+				m_edit_pw.set_text(pw);
+			}
 
-				m_edit_id.set_text(theApp.m_ini["LOGIN"]["ID"].to_CString());
-				CString pw = theApp.m_ini["LOGIN"]["PASS"].to_CString();
+			//로그인을 진행하기 전 현재 에이전트의 로그인 상태 정보를 요청한다.
+			//true : 이미 로그인 된 에이전트이므로 로그인 완료 상태로 처리하고 로그인 후처리 진행
+			//false : ReadLoginInfo() → 아직 로그인 전이고 자동 로그인 설정이라면 로그인 시도 진행(m_dlgLogin.Login())
+			get_device_onoff_status();
 
-				if (!pw.IsEmpty())
-				{
-					pw = Util::EnCryptPassword(pw);
-					m_edit_pw.set_text(pw);
-				}
-
-				//로그인을 진행하기 전 현재 에이전트의 로그인 상태 정보를 요청한다.
-				//true : 이미 로그인 된 에이전트이므로 로그인 완료 상태로 처리하고 로그인 후처리 진행
-				//false : ReadLoginInfo() → 아직 로그인 전이고 자동 로그인 설정이라면 로그인 시도 진행(m_dlgLogin.Login())
-				get_device_onoff_status();
-
-				if (m_login_state == LOGIN_OK)
-				{
-					select_child_dialog();
-				}
-				//자동 로그인 옵션이 켜져있으면 ID, PW를 입력시키고 자동 로그인 시도.
-				else if (m_check_auto_login.GetCheck() == BST_CHECKED)
-				{
-					OnBnClickedButtonLogin();
-				}
-				else
-				{
-					//원래 이 블록은 맨 위에 있어야 하지만 LOGIN_OK 또는 자동 로그인시에는 다시 disable 처리를 하므로
-					//불필요하게 깜빡이게 된다.
-					//그래서 로그인 상태도 아니고 자동 로그인도 아닐 경우 여기서 enable 시켜야 깔끔하다.
-					m_edit_id.EnableWindow();
-					m_edit_pw.EnableWindow();
-				}
-
-				m_edit_id.SetFocus();
+			if (m_login_state == LOGIN_OK)
+			{
+				select_child_dialog();
+			}
+			//자동 로그인 옵션이 켜져있으면 ID, PW를 입력시키고 자동 로그인 시도.
+			else if (m_check_auto_login.GetCheck() == BST_CHECKED)
+			{
+				OnBnClickedButtonLogin();
 			}
 			else
 			{
-				m_button_login.set_text(_S(IDS_BTN_UPDATE));
-				m_button_login.EnableWindow(FALSE);
-
-				CString str;
-
-				str.Format(_T("현재 버전(%s)보다 최신 버전(%s)가 존재합니다. 잠시 후 자동 패치를 진행합니다."), m_current_version, m_latest_version);
-				theApp.m_msgbox.DoModal(str, MB_OK, 5);
-
-				str.Format(_T("%s\\AutoPatcher.exe"), get_exe_directory());
-				ShellExecute(m_hWnd, _T("open"), str, nullptr, nullptr, SW_SHOW);
-				OnBnClickedCancel();
-				return;
+				//원래 이 블록은 맨 위에 있어야 하지만 LOGIN_OK 또는 자동 로그인시에는 다시 disable 처리를 하므로
+				//불필요하게 깜빡이게 된다.
+				//그래서 로그인 상태도 아니고 자동 로그인도 아닐 경우 여기서 enable 시켜야 깔끔하다.
+				m_edit_id.EnableWindow();
+				m_edit_pw.EnableWindow();
 			}
+
+			m_edit_id.SetFocus();
 		});
 }
 
@@ -990,37 +951,6 @@ bool CLMMLoginManagerDlg::get_current_version()
 	return true;
 }
 
-bool CLMMLoginManagerDlg::get_latest_version()
-{
-	CRequestUrlParams param(theApp.m_ip, theApp.m_port, _T("/download/agent/program_kr/version.html"));
-	request_url(&param);
-
-	if (param.status != HTTP_STATUS_OK)
-	{
-		logWrite(_T("Failed to get latest version info. status: %d"), param.status);
-		return false;
-	}
-	else
-	{
-		CString version_info = param.result;
-		version_info.Trim();
-
-		int dot_count = get_char_count(version_info, '.');
-
-		while (dot_count < 3)
-		{
-			version_info += _T(".0");
-			dot_count++;
-		}
-
-		m_latest_version = version_info;
-	}
-
-	logWrite(_T("m_latest_version = %s"), m_latest_version);
-
-	return true;
-}
-
 bool CLMMLoginManagerDlg::validate_login_input()
 {
 	if (m_edit_id.get_text().IsEmpty() || m_edit_pw.get_text().IsEmpty())
@@ -1362,7 +1292,7 @@ void CLMMLoginManagerDlg::change_theme(bool next_theme)
 	std::deque<CString> theme_list;
 	theApp.m_theme.get_color_theme_list(theme_list);
 	Clamp(cur_theme, 0, (int)theme_list.size() - 1);
-	trace(cur_theme);
+	sctrace(cur_theme);
 	theApp.m_theme.set_color_theme(cur_theme);
 	m_theme.copy_colors_from(theApp.m_theme);
 	Invalidate();
