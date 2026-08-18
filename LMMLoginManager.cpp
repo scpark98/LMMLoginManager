@@ -398,7 +398,12 @@ bool CLMMLoginManagerApp::is_duplicate_running()
 	logWrite(_T("%s"), __function__);
 
 	// 중복 실행 체크
-	HANDLE mutex = CreateMutex(NULL, FALSE, _T("LMMLoginMgr for Service"));
+#if defined(_LINKMEMINE_10)
+	HANDLE mutex = CreateMutex(NULL, FALSE, _T("LMMLgiMgr for LinkMeMine 1.0 Service"));
+#else
+	HANDLE mutex = CreateMutex(NULL, FALSE, _T("LMMLgiMgr for LinkMeMine 3.0 SE Service"));
+#endif
+
 	if (mutex == NULL)
 		return false;
 

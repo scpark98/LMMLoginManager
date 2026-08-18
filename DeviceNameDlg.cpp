@@ -149,7 +149,7 @@ void CDeviceNameDlg::OnBnClickedOk()
 		Json json;
 		if (!json.parse(param.result))
 		{
-			theApp.m_msgbox.DoModal(_T("읽어온 매니저 정보 데이터에 오류가 있습니다."), MB_ICONEXCLAMATION);
+			theApp.m_msgbox.DoModal(_S(IDS_INVALID_MANAGER_INFO), MB_ICONEXCLAMATION);
 			return;
 		}
 
@@ -216,7 +216,7 @@ bool CDeviceNameDlg::is_dev_name_duplicated(CString new_dev_name)
 		Json json;
 		if (!json.parse(param.result))
 		{
-			theApp.m_msgbox.DoModal(_T("장치명 중복체크 요청에 대한 응답 데이터에 오류가 있습니다."), MB_ICONEXCLAMATION);
+			theApp.m_msgbox.DoModal(_S(IDS_INVALID_DUP_CHECK_RESPONSE), MB_ICONEXCLAMATION);
 			return true;
 		}
 
@@ -276,7 +276,7 @@ bool CDeviceNameDlg::set_dev_name(CString new_dev_name)
 		Json json;
 		if (!json.parse(param.result))
 		{
-			theApp.m_msgbox.DoModal(_T("장치명 변경 요청에 대한 응답 데이터에 오류가 있습니다."), MB_ICONEXCLAMATION);
+			theApp.m_msgbox.DoModal(_S(IDS_INVALID_NAME_UPDATE_RESPONSE), MB_ICONEXCLAMATION);
 			m_button_ok.EnableWindow(TRUE);
 			return false;
 		}

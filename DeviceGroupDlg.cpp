@@ -166,7 +166,7 @@ void CDeviceGroupDlg::OnBnClickedOk()
 		if (!json.parse(param.result))
 		{
 			logWriteE(_T("json.parse"));
-			theApp.m_msgbox.DoModal(_T("읽어온 그룹정보에 오류가 있습니다."));
+			theApp.m_msgbox.DoModal(_S(IDS_INVALID_GROUP_INFO));
 			return;
 		}
 	}
@@ -246,7 +246,7 @@ void CDeviceGroupDlg::get_group_list()
 		Json json;
 		if (!json.parse(param.result))
 		{
-			theApp.m_msgbox.DoModal(_T("읽어온 그룹정보에 오류가 있습니다."));
+			theApp.m_msgbox.DoModal(_S(IDS_INVALID_GROUP_INFO));
 			return;
 		}
 
@@ -258,9 +258,9 @@ void CDeviceGroupDlg::get_group_list()
 		if (objs.Size() == 0)
 		{
 #if defined(_LINKMEMINE_10)
-			theApp.m_msgbox.DoModal(_T("설정된 그룹 목록이 존재하지 않습니다.\n그룹 지정이 필요할 경우 웹페이지에서 \"원격 관리\" 모드로 전환한 후 원하는 그룹을 추가하시기 바랍니다."));
+			theApp.m_msgbox.DoModal(_S(IDS_NO_GROUP_LIST_REMOTE_MODE));
 #else
-			theApp.m_msgbox.DoModal(_T("설정된 그룹 목록이 존재하지 않습니다.\n그룹 지정이 필요할 경우 웹페이지에서 원하는 그룹을 추가하시기 바랍니다."));
+			theApp.m_msgbox.DoModal(_S(IDS_NO_GROUP_LIST));
 #endif
 			OnBnClickedCancel();
 			return;

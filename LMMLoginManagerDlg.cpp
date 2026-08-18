@@ -235,7 +235,7 @@ void CLMMLoginManagerDlg::init_controls()
 	//20260728 by claude. disable 로 시작("서버 연결중...")하므로 disabled 에도 버튼 텍스트색을 유지(회색 방지).
 	m_button_login.set_text_color_disabled(m_theme.cr_button_text);
 	m_button_login.set_back_color_disabled(m_theme.cr_button_back);
-	m_button_login.set_text(_T("서버 연결중..."));
+	m_button_login.set_text(_S(IDS_CONNECTING_TO_SERVER));
 	//m_button_login.set_text_color(m_theme.cr_title_text, false);
 	//m_button_login.set_back_color(m_theme.cr_back_selected);// , false);
 	//m_button_login.set_parent_back_color(m_theme.cr_back);
@@ -243,6 +243,7 @@ void CLMMLoginManagerDlg::init_controls()
 	m_button_login.set_font_size(14);
 	m_button_login.set_font_weight(FW_BOLD);
 	m_button_login.copy_properties(m_button_restart);
+	m_button_restart.set_text(_S(IDS_BTN_RESTART));
 	m_button_restart.ShowWindow(SW_HIDE);
 
 	m_static_version.set_color_theme(m_theme);
@@ -375,10 +376,10 @@ void CLMMLoginManagerDlg::thread_get_version_and_login(CSCThread& th)
 	{
 		invoke_ui([this]
 		{
-			m_button_login.set_text(_T("서버 연결 실패"));
+			m_button_login.set_text(_S(IDS_FAIL_TO_CONNECT_SERVER));
 			m_static_version.set_blink(false);
-			m_static_version.set_text(_T("서버 연결 실패"), Gdiplus::Color::Crimson);
-			theApp.m_msgbox.DoModal(_T("서버에 연결할 수 없습니다.\n네트워크 환경 또는 인터넷 연결 상태를 먼저 확인해주세요.\n\n또는 서버가 구동중일 수 있으니 잠시 후 다시 시도해주시기 바랍니다."));
+			m_static_version.set_text(_S(IDS_FAIL_TO_CONNECT_SERVER), Gdiplus::Color::Crimson);
+			theApp.m_msgbox.DoModal(_S(IDS_FAIL_TO_CONNECT_SERVER_MSG));
 			OnBnClickedCancel();
 		});
 		return;
@@ -636,11 +637,8 @@ void CLMMLoginManagerDlg::OnBnClickedButtonLogin()
 				//빈 줄을 만들려면 <br> 두 개가 필요하고, 맨 앞은 진행 중인 줄이 없으므로 하나로 충분하다.
 				//첫 줄 위·마지막 줄 아래 여백은 라인 0이 shift 대상에서 제외되어(SCParagraph.cpp:910) <ls>만으로는
 				//만들 수 없다. 빈 줄을 두고 그 빈 줄과의 간격을 <ls=1.5>로 준다.
-				CString msg = _T("<br><ls=1.5><cr=#FBBF24><b>\"부팅 시 자동 로그인\"</b></cr><cr=#94A3B8> 옵션이 해제된 상태입니다.<br><br>")
-							  _T("이 옵션이 해제된 경우 <cr=#FFFFFF>에이전트 재시작 또는 시스템 재시작 시</cr><br>")
-							  _T("<cr=#F87171><b>자동 로그인되지 않으며 원격연결이 불가합니다.</b></cr><br><br>")
-							  _T("위 옵션을 체크하고 진행할까요?<br>")
-							  _T("<cr=#94A3B8>(\"아니오\" 선택 시 해제된 상태로 로그인합니다)</cr><ls=1.5><br>");
+				//20260818 by claude. 위 마크업 규칙이 적용된 실제 문구는 IDS_AUTO_LOGIN_OFF_WARNING(한/일/영)에 있다.
+				CString msg = _S(IDS_AUTO_LOGIN_OFF_WARNING);
 
 				if (theApp.m_msgbox.DoModal(msg, MB_YESNO) == IDYES)
 				{
@@ -995,14 +993,14 @@ void CLMMLoginManagerDlg::select_child_dialog()
 		m_edit_pw.EnableWindow(TRUE);
 		m_edit_id.ShowWindow(SW_SHOW);
 		m_edit_pw.ShowWindow(SW_SHOW);
-		m_button_login.set_text(_T("로그인"));
+		m_button_login.set_text(_S(IDS_BTN_LOGIN));
 	}
 	else if (m_login_state == LOGIN_OK)
 	{
 		m_edit_id.ShowWindow(SW_HIDE);
 		m_edit_pw.ShowWindow(SW_HIDE);
 		m_button_restart.ShowWindow(SW_SHOW);
-		m_button_login.set_text(_T("로그아웃"));
+		m_button_login.set_text(_S(IDS_BTN_LOGOUT));
 	}
 }
 
