@@ -85,7 +85,6 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	SetRegistryKey(_T("Koino"));
 
 	m_msgbox.create(nullptr);
-	m_msgbox.set_color_theme(m_theme);
 
 	m_product_title = _S(IDS_PRODUCT);
 
@@ -98,9 +97,17 @@ BOOL CLMMLoginManagerApp::InitInstance()
 	m_theme.set_color_theme(CSCColorTheme::color_theme_linkmemine_se);
 	m_product_title_full = m_product_title + _T(" 3.0 SE");
 #endif
+	m_msgbox.set_color_theme(m_theme);
 	m_msgbox.set_title(m_product_title_full);
 
 	gLog.write_start_log();
+
+	//20260820 by claude. [진단] UI 언어·로캘·코드페이지 실측. XP 는 추측이 자주 빗나가므로 값을 직접 남긴다.
+	{
+		TCHAR ui_state[256] = { 0 };
+		format_ui_language_state(ui_state, 256);
+		logWrite(_T("[UILanguage] %s"), ui_state);
+	}
 
 
 	//20240729 scpark AutPatcher.exe_ 를 AutPatcher.exe로 변경하는 update.bat 파일이 돌지 않는 경우가

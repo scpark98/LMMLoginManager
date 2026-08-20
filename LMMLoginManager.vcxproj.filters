@@ -128,6 +128,9 @@
     <ClInclude Include="..\..\Common\system\ShellImageList\ShellImageList.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\system\ui_language.h">
+      <Filter>Common</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Common\CMenu\CSCMenuBar\SCMenu.h">
       <Filter>Common</Filter>
     </ClInclude>
