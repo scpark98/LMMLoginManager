@@ -78,17 +78,22 @@ BOOL CPositionDlg::OnInitDialog()
 	MoveWindow(nLeft - 2, nTop - 32, nWidth + 4, nHeight + 34);
 	::SetWindowPos(GetSafeHwnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-	LONG lResult = SetWindowLong(this->GetSafeHwnd(), GWL_EXSTYLE, GetWindowLong(this->GetSafeHwnd(), GWL_EXSTYLE) | WS_EX_LAYERED);
-	if (!lResult)
-	{
-		return FALSE;
-	}
+	//20260820 by claude. SetWindowLong 은 "이전 값" 을 돌려준다. 이 다이얼로그는 WS_POPUP|WS_CLIPCHILDREN
+	//뿐이라 이전 ex-style 이 0 일 수 있고, 그러면 성공했는데도 0 이 반환되어 실패로 오판된다.
+	//그 경우 SetLayeredWindowAttributes 가 호출되지 않고 아래 버튼 초기화도 통째로 건너뛴다.
+	//ModifyStyleEx 로 대체하고, 실패해도 나머지 초기화는 계속한다.
+	ModifyStyleEx(0, WS_EX_LAYERED);
 
 	BOOL bResult = SetLayeredWindowAttributes(RGB(255, 255, 0), 0, LWA_COLORKEY);
-	if (!bResult)
-	{
-		return FALSE;
-	}
+
+	//20260820 by claude. [진단] XP 에서 내부가 투명해지지 않는 원인 추적용.
+	//색상키 방식은 화면에 찍힌 픽셀이 키 색과 "정확히" 같아야 하므로 화면 색심도도 함께 남긴다.
+	HDC screen_dc = ::GetDC(NULL);
+	int screen_bpp = ::GetDeviceCaps(screen_dc, BITSPIXEL);
+	::ReleaseDC(NULL, screen_dc);
+
+	logWrite(_T("[PositionDlg] SetLayeredWindowAttributes = %d, error = %d, exstyle = 0x%08X, screen_bpp = %d"),
+		bResult, GetLastError(), GetWindowLong(GetSafeHwnd(), GWL_EXSTYLE), screen_bpp);
 
 	m_btnClose.add_image(IDB_CLOSE);
 	m_btnClose.set_back_color(Gdiplus::Color(82, 87, 92));
@@ -229,8 +234,15 @@ void CPositionDlg::OnPaint()
 		boundRect.Height = 30;
 		g.DrawString(strDraw, -1, &titleFont, boundRect, &textSF, &textBR);
 
-		graphics.DrawImage(&bitmap, 0, 0);
+		//20260820 by claude. 3인자 DrawImage 는 목적지 크기를 비트맵의 DPI 로 계산하므로 화면 DPI 와
+		//다르면 보간이 걸린다. 목적지 크기를 명시해 1:1 로 고정한다.
+		graphics.DrawImage(&bitmap, 0, 0, rect.Width(), rect.Height());
 
+		//20260820 by claude. [진단] 색상키 영역을 GDI 로 다시 칠한다. GDI 의 FillSolidRect 는 요청한
+		//RGB 를 그대로 쓰므로, 이후에도 노란색이 남으면 원인은 그리기 픽셀이 아니라 다른 곳이다.
+		//투명해지면 GDI+ 경로가 픽셀을 바꾸고 있었던 것.
+		CRect rect_key(2, 32, rect.Width() - 2, rect.Height() - 2);
+		dc.FillSolidRect(rect_key, RGB(255, 255, 0));
 	}
 }
 
