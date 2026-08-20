@@ -718,8 +718,8 @@ bool CLMMLoginManagerDlg::service_start()
 {
 	CString agent_path = get_exe_directory() + _T("\\LMMAgent.exe");
 
-	//20260727 by claude. LMMAgent.exe 가 없으면 install/start 가 실패하고 UDP 응답을 못 받아 무한 대기에 빠진다.
-	//파일 존재를 먼저 확인 — 없으면 AutoPatcher(파라미터 없이 실행 시 누락/구버전 파일 복구) 실행을 권하고 중단.
+	//20260820 by claude. LMMAgent.exe 가 없으면 install/start 가 실패하고 UDP 응답을 못 받아 무한 대기에 빠진다.
+	//파일 존재를 먼저 확인 — 없으면 AutoPatcher(누락/구버전 파일 복구) 실행을 권하고 중단.
 	//AutoPatcher 마저 없으면 재설치 안내. 어느 경우든 로그인 시도로 비활성화된 입력 UI 를 복구한다.
 	if (!PathFileExists(agent_path))
 	{
@@ -729,7 +729,18 @@ bool CLMMLoginManagerDlg::service_start()
 		{
 			if (theApp.m_msgbox.DoModal(_S(IDS_AGENT_EXE_NOT_FOUND), MB_YESNO) == IDYES)
 			{
-				ShellExecute(NULL, _T("open"), patcher_path, nullptr, NULL, SW_SHOW);
+				//20260820 by claude. config.ini 의 UTYPE 이 AGENT 이면 AutoPatcher 는 "-update" 인자가 있어야만
+				//갱신 모드로 진입한다 (AutoPatcher.cpp InitInstance — AGENT 분기는 __targv[1]=="-update" 일 때만
+				//bUpdateMode=TRUE). 인자 없이 띄우면 자기 로그만 남기고 LMMLgiMgr 을 재실행한 뒤 즉시 종료하므로
+				//사용자 눈에는 "실행이 안 된 것" 으로 보인다. LMMHost 도 같은 목적에 "-update" 를 쓴다.
+				HINSTANCE result = ShellExecute(NULL, _T("open"), patcher_path, _T("-update"), NULL, SW_SHOW);
+
+				//20260820 by claude. [진단] ShellExecute 실패(반환값 <= 32)는 아무 흔적 없이 묻힌다.
+				//XP 에서 실행되지 않는 원인(SE_ERR_*) 추적용.
+				if ((INT_PTR)result <= 32)
+					logWrite(_T("[AutoPatcher] launch failed. ShellExecute = %d, GetLastError = %d, path = %s"), (int)(INT_PTR)result, GetLastError(), (LPCTSTR)patcher_path);
+				else
+					logWrite(_T("[AutoPatcher] launched: %s -update"), (LPCTSTR)patcher_path);
 
 				//scpark. LMMLgiMgr.exe 자기 자신도 종료시킨 후 패치되어야 한다.
 				//또는 AutoPatcher.exe에서 LMMLgiMgr.exe를 종료시키고 패치해야 한다.
