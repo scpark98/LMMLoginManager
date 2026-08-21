@@ -6,8 +6,14 @@
 
 - 솔루션은 **`.slnx`** (VS2026 형식). `.sln` 은 없다 — 없다고 단정하기 전에 확장자 변형을 확인할 것.
 - 축: `_LINKMEMINE_10` / `_LINKMEMINE_30` 매크로로 1.0 / 3.0 SE 분기.
-- 주 빌드 구성: **Release_Lmm30 | x86(Win32)**.
-- 산출물: `C:\Program Files (x86)\LinkMeMineSE\Agent\LMMLgiMgr.exe` (빌드 후 자동 복사).
+- `Release_Lmm10` 과 `Release_Lmm30` 은 **동등한 구성이다. 주/부 개념이 없다.** 그때그때 필요에 따라 고르므로, 빌드 전 반드시 `.vs\LMMLoginManager.slnx\v18\.suo` 의 ActiveCfg 를 확인해 **사용자가 현재 작업 중인 구성**으로 빌드한다. `.suo` 는 UTF-16 복합 문서라 `strings`/`grep` 으로는 안 잡힌다 — 아래처럼 읽는다(마지막 항목이 ActiveCfg):
+  ```powershell
+  $b=[IO.File]::ReadAllBytes(".vs\LMMLoginManager.slnx\v18\.suo"); [regex]::Matches([Text.Encoding]::Unicode.GetString($b),'(?:Debug|Release)[A-Za-z0-9_]*\|[A-Za-z0-9]+') | %{$_.Value} | Select -Unique
+  ```
+- 산출물은 구성별로 다르다 (`OutDir` 로 직접 출력, 빌드 후 자동 복사).
+  - Lmm10 → `C:\Program Files (x86)\LinkMeMine\Service\Agent\LMMLgiMgr.exe`
+  - Lmm30 → `C:\Program Files (x86)\LinkMeMineSE\Agent\LMMLgiMgr.exe`
+- 위 경로는 **사용자가 코드사인해 둔 배포본**이다. 컴파일 확인만 필요하면 `/t:ClCompile` 까지만 돌리고 링크하지 않는다.
 
 ## 인코딩
 
@@ -17,7 +23,9 @@
 ## 다국어 리소스
 
 - 스트링 테이블은 `LMMLoginManager.rc` 에 **일본어 / 한국어 / 영어** 3개 `LANGUAGE` 블록으로 존재한다. 신규 문자열은 **3개 블록 모두**에 추가해야 한다.
-- 코드에서는 `_S(IDS_XXX)` (= `Common/Functions.h` 의 `load_string`) 로 읽는다. 한글 문자열 리터럴 하드코딩 금지.
+- 코드에서는 `_S(IDS_XXX)` 로 읽는다. 한글 문자열 리터럴 하드코딩 금지.
+  - `_S` = `Common/Functions.h` 의 `load_cstring()` — **CString 반환** (MFC 전용). 연결 연산(`_S(...) + _T("...")`)이 그대로 된다.
+  - 포인터가 필요하거나 MFC 를 안 쓰는 프로젝트는 `Common/system/ui_language.h` 의 `load_string()` — **`const TCHAR*` 반환**. LMMHost 의 `StringTable::getString()` 이 이쪽이다.
 - 2026-08-18 기준 프로젝트 `*.cpp` 내 하드코딩 한글 문자열은 0건 (주석과 `LMMLoginManager.h:8` 의 `#error` 제외).
 - 용어 통일: 사용자에게 보이는 문구는 **"에이전트 이름"** 을 쓴다 ("장치명" 아님).
 - `resource.h` 의 `_APS_NEXT_RESOURCE_VALUE` 가 실제 사용 번호보다 낮으면 VS 리소스 편집기가 중복 ID 를 배정한다. 신규 ID 추가 시 함께 올릴 것.
